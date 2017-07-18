@@ -31,7 +31,7 @@ function draw_planar_graph(nodes, edges){
 		y_coordinates.push(i)
 	}
 
-	var lineGenerator = d3.line().curve(d3.curveCatmullRomOpen);
+	var lineGenerator = d3.line()//.curve(d3.curveCardinal);
 
 	var numNodi = nodes.length;
 	
@@ -40,15 +40,16 @@ function draw_planar_graph(nodes, edges){
 	var nodeGroup = svg.append("g")
 					.attr("id", "nodes");
 
-	var edge = edgeGroup.selectAll("line")
+	var edge = edgeGroup.selectAll("path")
 				.data(edges)
 				.enter()
-				.append("line")
+				.append("path")
 				.attr("id", function(d){return d.source+d.target})
 				.attr("source", function(d){return d.source})
 				.attr("target", function(d){return d.target})
 				.attr("stroke", "#dbdde6")
-				.attr("stroke-width", 5);
+				.attr("stroke-width", 5)
+				.attr("fill", "transparent");
 
 
 	var node = nodeGroup.selectAll("circle")
@@ -78,31 +79,14 @@ function draw_planar_graph(nodes, edges){
 
 
 
-	edge.attr("x1", function(d){
-			return d3.select("circle[id='"+d.source+"']").attr("cx")
-		})
-		.attr("y1", function(d){
-			return d3.select("circle[id='"+d.source+"']").attr("cy")
-		})
-		.attr("x2", function(d){
-			return d3.select("circle[id='"+d.target+"']").attr("cx")
-		})
-		.attr("y2", function(d){
-			return d3.select("circle[id='"+d.target+"']").attr("cy")
+	edge.attr("d", function(d){
+			var x1 = d3.select("circle[id='"+d.source+"']").attr("cx")	
+			var y1 = d3.select("circle[id='"+d.source+"']").attr("cy")
+			var x2 = d3.select("circle[id='"+d.target+"']").attr("cx")
+			var y2 = d3.select("circle[id='"+d.target+"']").attr("cy")
+			var lineG = lineGenerator([[x1,y1],[x1,y2],[x2,y2]])
+			console.log(lineG);
+			return lineG
 		});
 	
 }
-
-function create_points_list(x_coordinates, y_coordinates){
-	var result = [];
-
-	for (var i = 0; i < x_coordinates.length; i++) {
-		for (var j = 0; j < y_coordinates.length; j++) {
-
-			result.push([x_coordinates[i],y_coordinates[j]]);
-
-		}
-	}
-	return result;
-}
-
