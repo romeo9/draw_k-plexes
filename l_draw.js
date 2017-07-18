@@ -23,15 +23,13 @@ function draw_planar_graph(nodes, edges){
 	var dy = 60
 
 	var x_coordinates = []
-	for(var i=dx; i<430; i+=dx){
+	for(var i=dx; i<width; i+=dx){
 		x_coordinates.push(i)
 	}
 	var y_coordinates = []
-	for (var i = dy; i<600; i+=dy) {
+	for (var i = dy; i<height; i+=dy) {
 		y_coordinates.push(i)
 	}
-
-	var lineGenerator = d3.line()//.curve(d3.curveCardinal);
 
 	var numNodi = nodes.length;
 	
@@ -62,17 +60,28 @@ function draw_planar_graph(nodes, edges){
 		            
 		            if((x_coordinates[x_index] != null) && (y_coordinates[y_index] != null)){
 		            	var circle = header.append("circle").attr("id",function(d){return d.id})
-		            	
-		            	circle.attr("cx", x_coordinates[x_index]);
+		            	var cx = x_coordinates[x_index];
+		            	circle.attr("cx", cx);
 		            	x_coordinates.splice(x_index, 1);
 		            	
-		            	circle.attr("cy", y_coordinates[y_index]);
+		            	var cy = y_coordinates[y_index]
+		            	circle.attr("cy", cy);
 		            	y_coordinates.splice(y_index, 1);
 		            	
 		            	circle.attr("r", 15)
 						circle.attr("fill", "#095ae0")
 						circle.attr("stroke", "white")
-						circle.attr("stroke-width", 5)
+						circle.attr("stroke-width", 5);
+						
+						header.append("text")
+    						.text(function(d) {
+      							return d.id;
+   							 })
+    						.attr("x",cx-5)
+    						.attr("y",cy+5)
+    						.attr("font-size","20px")
+    						.attr("fill", "white")
+    						.attr("font-family", "sans-serif")
 		            }
 		        	});
 
@@ -84,9 +93,11 @@ function draw_planar_graph(nodes, edges){
 			var y1 = d3.select("circle[id='"+d.source+"']").attr("cy")
 			var x2 = d3.select("circle[id='"+d.target+"']").attr("cx")
 			var y2 = d3.select("circle[id='"+d.target+"']").attr("cy")
-			var lineG = lineGenerator([[x1,y1],[x1,y2],[x2,y2]])
-			console.log(lineG);
+
+			var lineGenerator = d3.line().curve(d3.curveBundle.beta(1));
+			var lineG = lineGenerator([[x1,y1],[x2,y1],[x2,y2]]);
+			
 			return lineG
-		});
+		}).attr("stroke-linejoin","round");
 	
 }
