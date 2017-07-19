@@ -1,6 +1,8 @@
 import json
-
-inputFile = open("example.nde", "r"); 
+"""This module will take the input.nde file with format similar to 
+http://patrignani.dia.uniroma3.it/large-k-plexes/example.nde
+and will write an output.json file describing graph's nodes and edges"""
+inputFile = open("input.nde", "r"); 
 outputFile = open("output.json", "w");
 
 data = inputFile.readlines()

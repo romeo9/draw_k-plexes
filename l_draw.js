@@ -30,8 +30,6 @@ function draw_planar_graph(nodes, edges){
 	for (var i = dy; i<height; i+=dy) {
 		y_coordinates.push(i)
 	}
-	console.log(x_coordinates)
-	console.log(y_coordinates)
 
 	var numNodi = nodes.length;
 	
