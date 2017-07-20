@@ -1,26 +1,26 @@
 var svg = d3.select("body")
 			.append("svg")
-			.attr("width",960)
-			.attr("height",600);
+			.attr("width",4960)
+			.attr("height",4600);
 
 	var width = svg.attr("width");
     var height = svg.attr("height");
 
 	
-	d3.json("example.json", function(error, data){
+	d3.json("ndeConverter/output.json", function(error, data){
 		if(error) throw error;
 
 		nodes = data.nodes;
+
 		edges = data.links;
-		
 		draw_planar_graph(nodes, edges);
 
 	});
 
 	
 function draw_planar_graph(nodes, edges){
-	var dx = 60
-	var dy = 60
+	var dx = 20
+	var dy = 20
 
 	var x_coordinates = []
 	for(var i=dx; i<width; i+=dx){
@@ -79,7 +79,7 @@ function draw_planar_graph(nodes, edges){
    							 })
     						.attr("x",cx-5)
     						.attr("y",cy+5)
-    						.attr("font-size","20px")
+    						.attr("font-size","10px")
     						.attr("fill", "white")
     						.attr("font-family", "sans-serif")
 		            }
@@ -94,7 +94,7 @@ function draw_planar_graph(nodes, edges){
 			var x2 = d3.select("circle[id='"+d.target+"']").attr("cx")
 			var y2 = d3.select("circle[id='"+d.target+"']").attr("cy")
 
-			var lineGenerator = d3.line().curve(d3.curveBundle.beta(1));
+			var lineGenerator = d3.line()//.curve(d3.curveBundle.beta(1));
 			var lineG = lineGenerator([[x1,y1],[x2,y1],[x2,y2]]);
 			
 			return lineG
