@@ -1,6 +1,6 @@
 var svg = d3.select("body")
 			.append("svg")
-			.attr("width",4960)
+			.attr("width",4900)
 			.attr("height",4600);
 
 	var width = svg.attr("width");
@@ -19,8 +19,8 @@ var svg = d3.select("body")
 
 	
 function draw_planar_graph(nodes, edges){
-	var dx = 2
-	var dy = 2
+	var dx = 10
+	var dy = 10
 
 	var x_coordinates = []
 	for(var i=dx; i<width; i+=dx){
