@@ -1,13 +1,13 @@
 var svg = d3.select("body")
 			.append("svg")
-			.attr("width",4900)
-			.attr("height",4600);
+			.attr("width",400)
+			.attr("height",300);
 
 	var width = svg.attr("width");
     var height = svg.attr("height");
 
 	
-	d3.json("ndeConverter/output.json", function(error, data){
+	d3.json("ndeConverter/example.json", function(error, data){
 		if(error) throw error;
 
 		nodes = data.nodes;
@@ -19,8 +19,8 @@ var svg = d3.select("body")
 
 	
 function draw_planar_graph(nodes, edges){
-	var dx = 10
-	var dy = 10
+	var dx = 30
+	var dy = 30
 
 	var x_coordinates = []
 	for(var i=dx; i<width; i+=dx){
@@ -54,10 +54,13 @@ function draw_planar_graph(nodes, edges){
 				.attr("fill", "transparent");
 
 
-	var node = nodeGroup.selectAll("circle")
+	var node = nodeGroup.selectAll("g")
 				.data(nodes)
 				.enter()
-				.each(function(d) {
+				.append("g")
+				.attr("id", function(d){return "nodo-"+d.id});
+
+	var nodeCircle = node.each(function(d) {
 					var header = d3.select(this);
 		            var x_index = Math.floor(Math.random()*x_coordinates.length);
 		            var y_index = Math.floor(Math.random()*y_coordinates.length);
@@ -88,9 +91,23 @@ function draw_planar_graph(nodes, edges){
     						.attr("font-family", "sans-serif")
 		            }
 		        	});
+	node.on("click", clickCollapse);
 
 
+	var simulation = d3.forceSimulation()
+        .force("forceX", d3.forceX().strength(.1).x(width * .5))
+        .force("forceY", d3.forceY().strength(.1).y(height * .5))
+        .force("center", d3.forceCenter().x(width * .5).y(height * .5))
+        .force("charge", d3.forceManyBody().strength(-15));
 
+        simulation
+          .nodes(nodes)
+          .force("collide", d3.forceCollide().strength(.5).radius(function(d){ return d.radius + 2.5; }).iterations(1))
+          .on("tick", function(d){
+            nodeCircle
+                .attr("cx", function(d){ return d.x; })
+                .attr("cy", function(d){ return d.y; })
+          });
 
 	edge.attr("d", function(d){
 			var x1 = d3.select("circle[id='"+d.source+"']").attr("cx")	
@@ -104,7 +121,25 @@ function draw_planar_graph(nodes, edges){
 			return lineG
 		}).attr("stroke-linejoin","round");
 	
+}
 
+function clickCollapse(d){
+	svg.selectAll("g").remove(); 
+	var circleGroup = svg.append("g")
+						.attr("transform", "translate("+width/2.+","+height/2.+")");
+	var circle = circleGroup.append("circle")
+		.attr("r", 10* nodes.length)
+		.attr("fill", "#095ae0")
+		.attr("stroke", "white");
+	circleGroup.append("text").text(nodes.length)
+							.attr("font-size",10*nodes.length+"px")
+    						.attr("fill", "white")
+    						.attr("font-family", "sans-serif")
+    						.attr("text-anchor","middle")
+    						.attr("alignment-baseline","mathematical");
+}
+
+/*
 	var zoom = d3.behavior.zoom()
         // only scale up, e.g. between 1x and 50x
         .scaleExtent([1, 50])
@@ -128,4 +163,5 @@ function draw_planar_graph(nodes, edges){
           ].join(" "));
         });
         svg.call(zoom);
-}
+        */
+
