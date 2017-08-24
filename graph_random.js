@@ -8,7 +8,7 @@ var svg = d3.select("body")
     var height = svg.attr("height");
 
 	
-	d3.json("example.json", function(error, data){
+	d3.json("ndeConverter/example.json", function(error, data){
 		if(error) throw error;
 
 		nodes = data.nodes;

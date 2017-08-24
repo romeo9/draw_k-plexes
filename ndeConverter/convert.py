@@ -3,8 +3,7 @@ import sys
 
 def convert():
 
-	
-	nameFile = sys.argv;
+	nameFile = "../dataset/geom.nde";
 
 	inputFile = open(nameFile, "r"); 
 	outputFile = open("output.json", "w");
@@ -23,12 +22,12 @@ def convert():
 
 	nodeLabels = []
 	for n in nodes:
-	  nodeLabels.append({"id":str(n)})
+	  nodeLabels.append({"id":n})
 
 	edgeLabels = []
 	for e in edges:
 	  strings = e.split(" ")
-	  edgeLabels.append({"source": strings[0], "target": strings[1]})
+	  edgeLabels.append({"source": int(strings[0]), "target": int(strings[1])})
 
 
 	finalData = {
@@ -38,5 +37,6 @@ def convert():
 
 	print(finalData)
 	with open("output.json", "w") as outputFile:
-	  json.dump(finalData, outputFile, indent=2)
+	  json.dump(finalData, outputFile, indent=4)
 
+convert()
