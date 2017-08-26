@@ -20,7 +20,8 @@ var canvasBorder = baseCanvas.append("rect")
 var width = baseCanvas.attr("width");
 var height = baseCanvas.attr("height");
 
-d3.json("ndeConverter/ca-GrQc.json", function(error, data){
+
+d3.json("ndeConverter/jazz.json", function(error, data){
 	if(error) throw error;
 	nodes = data.nodes;
 	edges = data.links;
@@ -32,16 +33,18 @@ d3.json("ndeConverter/ca-GrQc.json", function(error, data){
 	draw_plexes(nodes, edges);
 });
 
+var dx,dy;
+
+
 function draw_plexes(nodes, edges){
 
-	d3.text("2-plexes/cluster_output_ca-GrQc_2_35.csv", function(error, data) {
+	d3.text("2-plexes/cluster_output_jazz_2_24.csv", function(error, data) {
        	if(error) throw error;
        	plexes = d3.csvParseRows(data);
-       	plexes.splice(-1,1)
+
 		
-		plexes.sort(function(a, b){
-			return b.length - a.length;
-    	});
+		plexes.sort(function(a, b){return b.length - a.length;});
+		console.log(plexes)
 
     	biggestPlexLength = plexes[0].length;
 
@@ -51,8 +54,8 @@ function draw_plexes(nodes, edges){
 		var yRangeMin = (height/4);
 		var yRangeMax = (height/4)*3;
 
-		var dx = (width/2)/biggestPlexLength;
-		var dy = (height/2)/biggestPlexLength;
+		dx = (width/2)/biggestPlexLength;
+		dy = (height/2)/biggestPlexLength;
 
 		var x_coordinates = []
 		for(var i = xRangeMin; i < xRangeMax; i += dx){
@@ -70,7 +73,9 @@ function draw_plexes(nodes, edges){
 
 		var edge = edgeGroup.selectAll("path")
 				.data(edges)
-				.enter()
+				.enter().filter(function(d){
+					return plexes[0].includes(String(d.source)) && plexes[0].includes(String(d.target))
+				})
 				.append("path")
 				.attr("id", function(d){return d.source+"-"+d.target})
 				.attr("source", function(d){return d.source})
@@ -124,34 +129,61 @@ function draw_plexes(nodes, edges){
 			}
 
 		})
-		//TODO prendere solo gli archi tra nodi del k-plesso
-		/*edge.attr("d", function(d){
-			console.log(d.source)
-			if (Object.values(plexes[0]).indexOf(d.source) > -1 && Object.values(plexes[0]).indexOf(d.target) > -1) {
-					console.log("True")
-					var x1 = d3.select("#circle"+d.source).attr("cx")	
-					var y1 = d3.select("#circle"+d.source).attr("cy")
-					var x2 = d3.select("#circle"+d.target).attr("cx")
-					var y2 = d3.select("circle"+d.target).attr("cy")
+		
+		edge.attr("d", function(d){
+			var x1 = d3.select("g[id='"+d.source+"']").select("circle").attr("cx")	
+			var y1 = d3.select("g[id='"+d.source+"']").select("circle").attr("cy")
+			var x2 = d3.select("g[id='"+d.target+"']").select("circle").attr("cx")
+			var y2 = d3.select("g[id='"+d.target+"']").select("circle").attr("cy")
 
 			var lineGenerator = d3.line()//.curve(d3.curveBundle.beta(1));
 			var lineG = lineGenerator([[x1,y1],[x2,y1],[x2,y2]]);
 			
+			
 			return lineG
-			}
-			else{
-				console.log("false")
-			}
-	}).attr("stroke-linejoin","round");
-	*/
-        function handleMouseOver(d, i) {
-            d3.select(this).select("circle").attr("r", dy*2)
-            d3.select(this).select("text").attr("font-size", parseInt(dy*1.6) + "px")
-          }
+			
+	})//.attr("stroke-linejoin","round");
 
-      function handleMouseOut(d, i) {
-            d3.select(this).select("circle").attr("r", dy/2)
-            d3.select(this).select("text").attr("font-size", parseInt(dy/2.2) + "px")
-	}
-})
+
+
+});
 }
+
+function handleMouseOver(){
+	d3.select(this).select("circle").attr("r", dy*2)
+    d3.select(this).select("text").attr("font-size", parseInt(dy*1.6) + "px")
+
+    var node = d3.select(this).select("circle")
+		node.attr("stroke-width", 5)
+	 	.attr("stroke", "black");
+
+    var idNode = node.attr("id")
+
+	var links = d3.select("g#edges").selectAll("path").filter(function(d){
+		if(d.source == idNode){
+			d3.select("g#nodes").select("g#"+d.target).select("circle").attr("stroke-width", 5)
+	 				.attr("stroke", "black");
+	 		return true;
+		}
+		if(d.target == idNode){
+			d3.select("g#nodes").select("g#"+d.source).select("circle").attr("stroke-width", 5)
+	 				.attr("stroke", "black");
+	 		return true;
+		}
+		return false;
+	}).attr("fill", "black")
+				.attr("stroke-width", 3);
+}
+
+function handleMouseOut(){
+	d3.select(this).select("circle").attr("r", dy/2)
+    d3.select(this).select("text").attr("font-size", parseInt(dy/2.2) + "px")
+
+    var node = d3.selectAll("circle")
+	node.attr("stroke-width", 2)
+	.attr("stroke", "white");
+
+	var links = d3.selectAll("path").attr("stroke", "#dbdde6")
+				.attr("stroke-width", 2)
+}
+
