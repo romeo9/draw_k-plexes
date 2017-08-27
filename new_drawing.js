@@ -1,4 +1,4 @@
-canvasWidth = (screen.width)/100*98
+canvasWidth = (screen.width)/100*95
 canvasHeight = (screen.height)/100*65
 
 var baseCanvas = d3.select("body")
@@ -27,16 +27,16 @@ d3.json("ndeConverter/jazz.json", function(error, data){
 	edges = data.links;
 
 	var navbar = d3.select("header").select(".topnav");
-    navbar.append("div").text("Numero nodi: "+nodes.length)
-    navbar.append("div").text("Numero archi: "+edges.length)
+    navbar.append("div").text("Numero nodi: "+nodes.length +", Numero archi: "+edges.length).style("float","left").style("margin-right", "2em")
+    navbar.append("div").attr("id","plexesDiv").text("K-plessi: ")
 	
-	draw_plexes(nodes, edges);
+	draw_plexes(nodes, edges, 0);
 });
 
 var dx,dy;
 
 
-function draw_plexes(nodes, edges){
+function draw_plexes(nodes, edges, plex){
 
 	d3.text("2-plexes/cluster_output_jazz_2_24.csv", function(error, data) {
        	if(error) throw error;
@@ -46,7 +46,7 @@ function draw_plexes(nodes, edges){
 		plexes.sort(function(a, b){return b.length - a.length;});
 		console.log(plexes)
 
-    	biggestPlexLength = plexes[0].length;
+    	biggestPlexLength = plexes[plex].length;
 
 		var xRangeMin = width/4;
 		var xRangeMax = (width/4)*3;
@@ -74,18 +74,18 @@ function draw_plexes(nodes, edges){
 		var edge = edgeGroup.selectAll("path")
 				.data(edges)
 				.enter().filter(function(d){
-					return plexes[0].includes(String(d.source)) && plexes[0].includes(String(d.target))
+					return plexes[plex].includes(String(d.source)) && plexes[plex].includes(String(d.target))
 				})
 				.append("path")
 				.attr("id", function(d){return d.source+"-"+d.target})
 				.attr("source", function(d){return d.source})
 				.attr("target", function(d){return d.target})
 				.attr("stroke", "#dbdde6")
-				.attr("stroke-width", 1)
+				.attr("stroke-width", dy/8)
 				.attr("fill", "transparent");
 
 		var node = nodeGroup.selectAll("circle")
-		.data(plexes[0])
+		.data(plexes[plex])
 		.enter()
 		.each(function(d) {
 			var header = d3.select(this);
@@ -136,7 +136,7 @@ function draw_plexes(nodes, edges){
 			var x2 = d3.select("g[id='"+d.target+"']").select("circle").attr("cx")
 			var y2 = d3.select("g[id='"+d.target+"']").select("circle").attr("cy")
 
-			var lineGenerator = d3.line()//.curve(d3.curveBundle.beta(1));
+			var lineGenerator = d3.line()//==.curve(d3.curveBundle.beta(1));
 			var lineG = lineGenerator([[x1,y1],[x2,y1],[x2,y2]]);
 			
 			
