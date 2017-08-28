@@ -27,8 +27,12 @@ d3.json("ndeConverter/s838_st.json", function(error, data){
 	edges = data.links;
 
 	var navbar = d3.select("header").select(".topnav");
-    navbar.append("div").text("Numero nodi: "+nodes.length +", Numero archi: "+edges.length).style("float","left").style("margin-right", "2em")
-    navbar.append("div").attr("id","plexesDiv").text("K-plessi: ")
+	document.getElementById('nodeNumber').textContent = nodes.length.toString();
+	document.getElementById('edgeNumber').textContent = edges.length.toString();
+	//document.getElementById('nodeNumber').value = nodes.length;
+	//document.getElementById('edgeNumber').value = edges.length;
+    //navbar.insert("div",":first-child").text("Numero nodi: "+nodes.length +", Numero archi: "+edges.length).style("float","left").style("margin-right", "2em")
+    //navbar.append("div").attr("id","plexesDiv").text("K-plessi: ")
 	
 
 
