@@ -1,19 +1,26 @@
 <!DOCTYPE html>
 <html>
-<script src="https://d3js.org/d3.v4.min.js"></script>
 <header>
+<script src="https://d3js.org/d3.v4.min.js">
+</script>
+</header>
+
+<body style="margin: 40px">
 <div class="topnav" id="myTopnav" style="
 position:fixed; background-color: black; top:0; width: 100%; left:0; color: white;
 text-align: left; padding: 16px 16px; font-family: Arial, Helvetica, sans-serif; padding-top: 0;
 ">
   <h3></h3>
+  <div style="float:left; margin-right:2em;">
+  Numero nodi: <a type="number" name="nodeNumber" id="nodeNumber" style="color:white"></a>, 
+  Numero archi: <a name="edgeNumber" id="edgeNumber" style="color:white"></a>
+  </div>
+  <<--!insert plexes here-->>
 </div>
 <br>
 <br>
 <br>
-</header>
-
-<body style="margin: 50px; border: 10px">
-<script type="text/javascript" src="new_drawing.js"></script>
+<script type="text/javascript" src="new_drawing.js">
+</script>
 </body>
 </html>
