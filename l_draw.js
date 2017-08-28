@@ -10,7 +10,7 @@ var svg = d3.select("body")
 	var width = svg.attr("width");
     var height = svg.attr("height");
 
-d3.json("ndeConverter/output.json", function(error, data){
+d3.json("ndeConverter/s838_st.json", function(error, data){
 		if(error) throw error;
 
 		nodes = data.nodes;
