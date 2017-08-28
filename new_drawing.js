@@ -7,7 +7,7 @@ var baseCanvas = d3.select("body")
 					.attr("width", canvasWidth)
 					.attr("height", canvasHeight)
 					.attr("border",1)
-
+/*
 var canvasBorder = baseCanvas.append("rect")
        			.attr("x", 0)
        			.attr("y", 0)
@@ -16,12 +16,19 @@ var canvasBorder = baseCanvas.append("rect")
        			.style("stroke", 'black')
        			.style("fill", "none")
        			.style("stroke-width", 1);
+       			*/
 
 var width = baseCanvas.attr("width");
 var height = baseCanvas.attr("height");
 
+var nodes,edges, dx,dy, strokeNode, strokeEdge, raggio, fontSize, plexes;
+var toggle = 0;
+console.log(toggle)
 
-d3.json("ndeConverter/s838_st.json", function(error, data){
+var dataset = "ca-CondMat"
+document.getElementById("dataset").textContent = "Dataset: "+dataset
+
+d3.json("ndeConverter/"+dataset+".json", function(error, data){
 	if(error) throw error;
 	nodes = data.nodes;
 	edges = data.links;
@@ -29,44 +36,49 @@ d3.json("ndeConverter/s838_st.json", function(error, data){
 	var navbar = d3.select("header").select(".topnav");
 	document.getElementById('nodeNumber').textContent = nodes.length.toString();
 	document.getElementById('edgeNumber').textContent = edges.length.toString();
-	//document.getElementById('nodeNumber').value = nodes.length;
-	//document.getElementById('edgeNumber').value = edges.length;
-    //navbar.insert("div",":first-child").text("Numero nodi: "+nodes.length +", Numero archi: "+edges.length).style("float","left").style("margin-right", "2em")
-    //navbar.append("div").attr("id","plexesDiv").text("K-plessi: ")
-	
 
 
-	draw_plexes(nodes, edges, 0);
-});
-
-var dx,dy, strokeNode, strokeEdge, raggio, fontSize;
-
-
-function draw_plexes(nodes, edges, plex){
-
-	d3.text("2-plexes/cluster_output_s838_st_2_3.csv", function(error, data) {
+	d3.text("2-plexes/cluster_output_ca-CondMat_2_21.csv", function(error, data) {
        	if(error) throw error;
        	plexes = d3.csvParseRows(data);
-       			console.log(plexes)
+       			//console.log(plexes)
 
-		
+       	createPagination(plexes)
+       	
+       	
 		plexes.sort(function(a, b){return b.length - a.length;});
 
-    	biggestPlexLength = plexes[plex].length;
+    	biggestPlexLength = plexes[0].length;
 
+
+		if(biggestPlexLength > 100){
+			dx = width/100.;
+			dy = height/100.;
+		}
+		if(biggestPlexLength < 10){
+			dx = width/20.
+			dy = height/20.
+		}
+		else{
+			dx = width/(2.*biggestPlexLength)
+			dy = height/(2.*biggestPlexLength)
+		}		
+
+	});
+
+});
+
+
+function create_single_plexes(plex){
+		strokeEdge = dy/8.
+		strokeNode = dy/6.
+		raggio = dy/2.
+		fontSize = dy/2.2
 		var xRangeMin = width/4;
 		var xRangeMax = (width/4)*3;
 
 		var yRangeMin = (height/4);
 		var yRangeMax = (height/4)*3;
-
-		dx = (width/2)/biggestPlexLength;
-		dy = (height/2)/biggestPlexLength;
-
-		strokeEdge = dy/8.
-		strokeNode = dy/6.
-		raggio = dy/2.
-		fontSize = dy/2.2
 
 		var x_coordinates = []
 		for(var i = xRangeMin; i < xRangeMax; i += dx){
@@ -136,8 +148,9 @@ function draw_plexes(nodes, edges, plex){
 					.attr("fill", "white")
 					.attr("font-family", "sans-serif")
 
-
-			}
+			
+			
+		}
 
 		})
 		
@@ -153,11 +166,8 @@ function draw_plexes(nodes, edges, plex){
 			
 			return lineG
 			
-	})//.attr("stroke-linejoin","round");
+			})
 
-
-
-});
 }
 
 function handleMouseOver(){
@@ -173,20 +183,19 @@ function handleMouseOver(){
 	var links = d3.select("g#edges").selectAll("path")
 	links.filter(function(d){
 		if(d.source == idNode){
-			d3.select("g[id='nodes']").select("g[id='"+d.target+"']").select("circle").attr("stroke-width", dy/4.)
+			d3.select("g[id='nodes']").select("g[id='"+d.target+"']").select("circle").attr("stroke-width", strokeNode)
 	 				.attr("stroke", "black");
 	 		return true;
 		}
 		if(d.target == idNode){
-			d3.select("g#nodes").select("g[id='"+d.source+"']").select("circle").attr("stroke-width", dy/4.)
+			d3.select("g#nodes").select("g[id='"+d.source+"']").select("circle").attr("stroke-width", strokeNode)
 	 				.attr("stroke", "black");
 	 		return true;
 		}
 		return false;
 	}).attr("stroke", "black")
-	.attr("stroke-width", strokeEdge);
+	.attr("stroke-width", strokeEdge+ strokeEdge*2);
 
-	console.log(links)
 }
 
 function handleMouseOut(){
@@ -201,3 +210,80 @@ function handleMouseOut(){
 				.attr("stroke-width", strokeEdge)
 }
 
+function draw(plex){
+	if(toggle == 1){
+		d3.selectAll("g").remove()
+		toggle = 0;
+		
+	}
+	if(toggle == 0){
+		create_single_plexes(plex)
+		toggle = 1;
+		return
+
+	}
+
+}
+
+
+
+function createPagination(plexes){
+
+	document.getElementById("numberkplexes").textContent = plexes.length
+	var ul = document.getElementById("pagination")
+       	var li,a;
+
+       	var span1 = document.createElement("span")
+       	span1.setAttribute("aria-hidden", true)
+       	span1.appendChild(document.createTextNode('<<'))
+       	
+       	var span2 = document.createElement("span")
+       	span2.setAttribute("class","sr-only")
+       	span2.appendChild(document.createTextNode("Previous"))
+       	
+       	var arrowLeftA = document.createElement("a")
+       	arrowLeftA.setAttribute("class", "page-link")
+       	arrowLeftA.setAttribute("href", "#")
+       	arrowLeftA.setAttribute("aria-label", "Previous")
+       	arrowLeftA.appendChild(span1)
+       	arrowLeftA.appendChild(span2)
+
+       	var arrowLeftLi = document.createElement("li")
+       	arrowLeftLi.setAttribute("class","page-item")
+       	arrowLeftLi.appendChild(arrowLeftA)
+       	ul.appendChild(arrowLeftLi)
+
+       	for (var i = 0;i<plexes.length;i++) {
+       		li = document.createElement("li")
+       		a = document.createElement("a")
+       		a.setAttribute("class", "page-link")
+       		a.setAttribute("href", "#")
+       		a.setAttribute("onclick", "return draw("+i+")")
+       		a.appendChild(document.createTextNode(i+1))
+       		li.appendChild(a);
+  			li.setAttribute("id", i); // added line
+  			li.setAttribute("class","page-item")
+  			ul.appendChild(li);
+       	}
+		
+       	var span3 = document.createElement("span")
+       	span3.setAttribute("aria-hidden", true)
+       	span3.appendChild(document.createTextNode('>>'))
+       	
+       	var span4 = document.createElement("span")
+       	span4.setAttribute("class","sr-only")
+       	span4.appendChild(document.createTextNode("Next"))
+       	
+       	var arrowRightA = document.createElement("a")
+       	arrowRightA.setAttribute("class", "page-link")
+       	arrowRightA.setAttribute("href", "#")
+       	arrowRightA.setAttribute("aria-label", "Next")
+
+       	arrowRightA.appendChild(span3)
+       	arrowRightA.appendChild(span4)
+
+       	var arrowRightLi = document.createElement("li")
+       	arrowRightLi.setAttribute("class","page-item")
+       	arrowRightLi.appendChild(arrowRightA)
+       	ul.appendChild(arrowRightLi)
+}
