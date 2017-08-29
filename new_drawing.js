@@ -25,6 +25,12 @@ var nodes,edges, dx,dy, strokeNode, strokeEdge, raggio, fontSize, plexes;
 var toggle = 0;
 console.log(toggle)
 
+d3.selection.prototype.moveToFront = function() {
+  return this.each(function(){
+    this.parentNode.appendChild(this);
+  });
+};
+
 var dataset = "ca-CondMat"
 document.getElementById("dataset").textContent = "Dataset: "+dataset
 
@@ -194,7 +200,8 @@ function handleMouseOver(){
 		}
 		return false;
 	}).attr("stroke", "black")
-	.attr("stroke-width", strokeEdge+ strokeEdge*2);
+	.attr("stroke-width", strokeEdge+ strokeEdge*2)
+	.moveToFront();
 
 }
 
