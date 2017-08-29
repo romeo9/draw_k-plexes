@@ -6,8 +6,7 @@ var baseCanvas = d3.select("body")
 					.attr("id","canvas")
 					.attr("width", canvasWidth)
 					.attr("height", canvasHeight)
-					.attr("border",1)
-/*
+
 var canvasBorder = baseCanvas.append("rect")
        			.attr("x", 0)
        			.attr("y", 0)
@@ -16,14 +15,13 @@ var canvasBorder = baseCanvas.append("rect")
        			.style("stroke", 'black')
        			.style("fill", "none")
        			.style("stroke-width", 1);
-       			*/
 
 var width = baseCanvas.attr("width");
 var height = baseCanvas.attr("height");
 
 var nodes,edges, dx,dy, strokeNode, strokeEdge, raggio, fontSize, plexes;
 var toggle = 0;
-console.log(toggle)
+
 
 d3.selection.prototype.moveToFront = function() {
   return this.each(function(){
@@ -32,6 +30,8 @@ d3.selection.prototype.moveToFront = function() {
 };
 
 var dataset = "ca-CondMat"
+var plexes;
+
 document.getElementById("dataset").textContent = "Dataset: "+dataset
 
 d3.json("ndeConverter/"+dataset+".json", function(error, data){
@@ -42,6 +42,7 @@ d3.json("ndeConverter/"+dataset+".json", function(error, data){
 	var navbar = d3.select("header").select(".topnav");
 	document.getElementById('nodeNumber').textContent = nodes.length.toString();
 	document.getElementById('edgeNumber').textContent = edges.length.toString();
+
 
 
 	d3.text("2-plexes/cluster_output_ca-CondMat_2_21.csv", function(error, data) {
@@ -66,8 +67,8 @@ d3.json("ndeConverter/"+dataset+".json", function(error, data){
 			dy = height/20.
 		}
 		else{
-			dx = width/(2.*biggestPlexLength)
-			dy = height/(2.*biggestPlexLength)
+			dx = width/(2.*(biggestPlexLength-1))
+			dy = height/(2.*(biggestPlexLength-1))
 		}		
 
 	});
@@ -76,24 +77,46 @@ d3.json("ndeConverter/"+dataset+".json", function(error, data){
 
 
 function create_single_plexes(plex){
+
+		biggestPlexLength = plexes[plex].length
+
+		console.log(biggestPlexLength)
+
+		if(biggestPlexLength > 100){
+			dx = width/100.*(biggestPlexLength-1);
+			dy = height/100.*(biggestPlexLength-1);
+		}
+		if(biggestPlexLength < 10){
+			dx = width/20.*(biggestPlexLength-1)
+			dy = height/20.*(biggestPlexLength-1)
+		}
+		else{
+			dx = width/(2.*(biggestPlexLength))
+			dy = height/(2.*(biggestPlexLength))
+		}	
+
+
 		strokeEdge = dy/8.
 		strokeNode = dy/6.
 		raggio = dy/2.
 		fontSize = dy/2.2
-		var xRangeMin = width/4;
-		var xRangeMax = (width/4)*3;
 
-		var yRangeMin = (height/4);
-		var yRangeMax = (height/4)*3;
+		var xRangeMin = width/4.;
+		var xRangeMax = (width/4.)*3;
+
+		var yRangeMin = (height/4.);
+		var yRangeMax = (height/4.)*3;
 
 		var x_coordinates = []
-		for(var i = xRangeMin; i < xRangeMax; i += dx){
+		for(var i = xRangeMin; i <= xRangeMax-dx; i += dx){
 			x_coordinates.push(i)
 		}
 		var y_coordinates = []
-		for (var i = yRangeMin; i < yRangeMax; i += dy) {
+		for (var i = yRangeMin; i <= yRangeMax-dy; i += dy) {
 			y_coordinates.push(i)
 		}
+		console.log(x_coordinates)
+		console.log(y_coordinates)
 
 		var edgeGroup = baseCanvas.append("g")
 									.attr("id", "edges");
@@ -158,25 +181,33 @@ function create_single_plexes(plex){
 			
 		}
 
-		})
+		});
 		
 		edge.attr("d", function(d){
-			var x1 = d3.select("g[id='"+d.source+"']").select("circle").attr("cx")	
+
+			//coordinate punto sorgente
+			var x1 = d3.select("g[id='"+d.source+"']").select("circle").attr("cx")
 			var y1 = d3.select("g[id='"+d.source+"']").select("circle").attr("cy")
+
+			//coordinate punto target
 			var x2 = d3.select("g[id='"+d.target+"']").select("circle").attr("cx")
 			var y2 = d3.select("g[id='"+d.target+"']").select("circle").attr("cy")
 
-			var lineGenerator = d3.line()//==.curve(d3.curveBundle.beta(1));
-			var lineG = lineGenerator([[x1,y1],[x2,y1],[x2,y2]]);
 			
-			
-			return lineG
-			
-			})
+
+			var lineGenerator = d3.line()
+			var line;
+			line = lineGenerator([[x1,y1],[x1,y2],[x2,y2]]);
+				
+			return line
+
+			});
 
 }
 
 function handleMouseOver(){
+
+
 	d3.select(this).select("circle").attr("r", raggio*2)
     d3.select(this).select("text").attr("font-size", parseInt(fontSize*1.6) + "px")
 
@@ -187,17 +218,24 @@ function handleMouseOver(){
     var idNode = node.attr("id")
 
 	var links = d3.select("g#edges").selectAll("path")
+
+
 	links.filter(function(d){
+
+		//Mostra solo archi uscenti
 		if(d.source == idNode){
 			d3.select("g[id='nodes']").select("g[id='"+d.target+"']").select("circle").attr("stroke-width", strokeNode)
 	 				.attr("stroke", "black");
 	 		return true;
 		}
+
+		//Mostra solo archi entranti
 		if(d.target == idNode){
 			d3.select("g#nodes").select("g[id='"+d.source+"']").select("circle").attr("stroke-width", strokeNode)
-	 				.attr("stroke", "black");
+	 					.attr("stroke", "black");
 	 		return true;
 		}
+
 		return false;
 	}).attr("stroke", "black")
 	.attr("stroke-width", strokeEdge+ strokeEdge*2)
@@ -219,6 +257,7 @@ function handleMouseOut(){
 
 function draw(plex){
 	if(toggle == 1){
+
 		d3.selectAll("g").remove()
 		toggle = 0;
 		
@@ -235,7 +274,6 @@ function draw(plex){
 
 
 function createPagination(plexes){
-
 	document.getElementById("numberkplexes").textContent = plexes.length
 	var ul = document.getElementById("pagination")
        	var li,a;
@@ -265,7 +303,8 @@ function createPagination(plexes){
        		a = document.createElement("a")
        		a.setAttribute("class", "page-link")
        		a.setAttribute("href", "#")
-       		a.setAttribute("onclick", "return draw("+i+")")
+
+       		a.setAttribute("onclick","return draw("+i+")")
        		a.appendChild(document.createTextNode(i+1))
        		li.appendChild(a);
   			li.setAttribute("id", i); // added line
