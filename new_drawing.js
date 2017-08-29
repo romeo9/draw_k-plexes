@@ -48,7 +48,6 @@ d3.json("ndeConverter/"+dataset+".json", function(error, data){
 	d3.text("2-plexes/cluster_output_ca-CondMat_2_21.csv", function(error, data) {
        	if(error) throw error;
        	plexes = d3.csvParseRows(data);
-       			//console.log(plexes)
 
        	createPagination(plexes)
        	
@@ -67,8 +66,8 @@ d3.json("ndeConverter/"+dataset+".json", function(error, data){
 			dy = height/20.
 		}
 		else{
-			dx = width/(2.*(biggestPlexLength-1))
-			dy = height/(2.*(biggestPlexLength-1))
+			dx = width/(2.*(biggestPlexLength))
+			dy = height/(2.*(biggestPlexLength))
 		}		
 
 	});
@@ -80,43 +79,49 @@ function create_single_plexes(plex){
 
 		biggestPlexLength = plexes[plex].length
 
-		console.log(biggestPlexLength)
-
-		if(biggestPlexLength > 100){
-			dx = width/100.*(biggestPlexLength-1);
-			dy = height/100.*(biggestPlexLength-1);
-		}
-		if(biggestPlexLength < 10){
-			dx = width/20.*(biggestPlexLength-1)
-			dy = height/20.*(biggestPlexLength-1)
-		}
-		else{
-			dx = width/(2.*(biggestPlexLength))
-			dy = height/(2.*(biggestPlexLength))
-		}	
-
-
 		strokeEdge = dy/8.
 		strokeNode = dy/6.
 		raggio = dy/2.
 		fontSize = dy/2.2
 
-		var xRangeMin = width/4.;
-		var xRangeMax = (width/4.)*3;
+		var xRangeMin = canvasWidth/4.
+		var xRangeMax = parseFloat(width) - xRangeMin
 
-		var yRangeMin = (height/4.);
-		var yRangeMax = (height/4.)*3;
+		var yRangeMin = canvasHeight/4.
+		var yRangeMax = parseFloat(height) - yRangeMin
+
+		var innerWidth = xRangeMax - xRangeMin
+		var innerHeight = yRangeMax - yRangeMin
+
+		if(biggestPlexLength > 100){
+			dx = innerWidth/100.*(biggestPlexLength);
+			dy = innerHeight/100.*(biggestPlexLength);
+		}
+		if(biggestPlexLength < 10){
+			dx = innerWidth/20.*(biggestPlexLength)
+			dy = innerHeight/20.*(biggestPlexLength)
+		}
+		else{
+			dx = innerWidth/parseFloat(biggestPlexLength)
+			dy = innerHeight/parseFloat(biggestPlexLength)
+		}	
 
 		var x_coordinates = []
-		for(var i = xRangeMin; i <= xRangeMax-dx; i += dx){
+		for(var i = xRangeMin; i < xRangeMax; i += dx){
 			x_coordinates.push(i)
 		}
+
 		var y_coordinates = []
-		for (var i = yRangeMin; i <= yRangeMax-dy; i += dy) {
+		for (var i = yRangeMin; i < yRangeMax; i += dy) {
 			y_coordinates.push(i)
 		}
-		console.log(x_coordinates)
-		console.log(y_coordinates)
+		
+		if(x_coordinates.length > biggestPlexLength){
+			x_coordinates.splice(x_coordinates.length-1,1)
+		}
+		if(y_coordinates.length > biggestPlexLength){
+			y_coordinates.splice(y_coordinates.length-1,1)
+		}
 
 		var edgeGroup = baseCanvas.append("g")
 									.attr("id", "edges");
