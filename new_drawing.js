@@ -7,7 +7,10 @@ var baseCanvas = d3.select("body")
 					.attr("width", canvasWidth)
 					.attr("height", canvasHeight)
 
+/*
+//TODO: claudia should fix this
 var canvasBorder = baseCanvas.append("rect")
+				.attr("id", "canvasBorder")
        			.attr("x", 0)
        			.attr("y", 0)
        			.attr("height", canvasHeight)
@@ -15,19 +18,12 @@ var canvasBorder = baseCanvas.append("rect")
        			.style("stroke", 'black')
        			.style("fill", "none")
        			.style("stroke-width", 1);
-
+*/
 var width = baseCanvas.attr("width");
 var height = baseCanvas.attr("height");
 
 var nodes,edges, dx,dy, strokeNode, strokeEdge, raggio, fontSize, plexes;
 var toggle = 0;
-
-
-d3.selection.prototype.moveToFront = function() {
-  return this.each(function(){
-    this.parentNode.appendChild(this);
-  });
-};
 
 var dataset = "ca-CondMat"
 var plexes;
@@ -43,19 +39,16 @@ d3.json("ndeConverter/"+dataset+".json", function(error, data){
 	document.getElementById('nodeNumber').textContent = nodes.length.toString();
 	document.getElementById('edgeNumber').textContent = edges.length.toString();
 
-
-
 	d3.text("2-plexes/cluster_output_ca-CondMat_2_21.csv", function(error, data) {
        	if(error) throw error;
        	plexes = d3.csvParseRows(data);
 
        	createPagination(plexes)
-       	
+       	drawStackedGraph(nodes, edges, plexes)
        	
 		plexes.sort(function(a, b){return b.length - a.length;});
 
     	biggestPlexLength = plexes[0].length;
-
 
 		if(biggestPlexLength > 100){
 			dx = width/100.;
@@ -74,6 +67,51 @@ d3.json("ndeConverter/"+dataset+".json", function(error, data){
 
 });
 
+d3.selection.prototype.moveToFront = function() {
+  return this.each(function(){
+    this.parentNode.appendChild(this);
+  });
+};
+
+function drawStackedGraph(nodes, edges, plexes) {
+	var plexesData = countPlexes(nodes, edges, plexes)
+	var plexesNumber = plexesData[0]
+	var plexesEdges = plexesData[1]
+	var isClique = []
+
+	for (i = 0; i < plexes.length; i++) {
+		plexesLength = plexes[i].length
+		cliqueEdgeNumber = plexesLength*(plexesLength-1)
+		cliqueEdgeNumber = cliqueEdgeNumber/2
+		if (cliqueEdgeNumber == plexesNumber[i]) {
+			isClique.push(true)
+		}
+		else {
+			isClique.push(false)}
+	}
+	console.log("Cliques : " + isClique)
+	console.log("Number of edges in plex : " + plexesNumber)
+	console.log("Edges in plex : " + plexesEdges)
+}
+
+function countPlexes(nodes, edges, plexes) {
+	result = Array.apply(null, Array(plexes.length)).map(Number.prototype.valueOf,0);
+	res = []
+	for (edge in edges) {
+		for (i = 0; i < plexes.length; i++) {
+			//if (edges[edge].source in plexes[i] && edges[edge].target in plexes[i]) {
+			if (plexes[i].includes(edges[edge].source.toString()) > 0 && plexes[i].includes(edges[edge].target.toString()) > 0) {
+				result[i] += 1;
+				if (res[i] == null) {
+					res.push([]);
+				}
+				res[i].push(edges[edge].source.toString() + "-" + edges[edge].target.toString())
+			}
+		}
+	}
+	return [result, res]
+
+}
 
 function create_single_plexes(plex){
 
