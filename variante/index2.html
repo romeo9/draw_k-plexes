@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<link rel="stylesheet" type="text/css" href="style.css">
+<link href="https://fonts.googleapis.com/css?family=Fira+Sans" rel="stylesheet">
+<head>
+	<title>New Index</title>
+</head>
+<body>
+	<div id="navbar" class="container">
+		<a class="active" href="#home">Draw k-plexes</a>
+			<div class="dropdown">
+    			<button class="dropbtn" onclick="showDropdown()">Select dataset..</button>
+    			<div class="dropdown-content" id="myDropdown">
+			      <a id="ca-CondMat" class="dataset" href="#">ca-CondMat</a>
+			      <a id="ca-GrQc" class="dataset" href="#">ca-GrQc</a>
+			      <a id="ca-HepPh" class="dataset" href="#">ca-HepPh</a>
+			      <a id="geom" class="dataset" href="#">geom</a>
+			      <a id="jazz" class="dataset" href="#">jazz</a>
+			      <a id="s838_st" class="dataset" href="#">s838_st</a>
+			    </div>
+  			</div> 
+  		</div>	
+
+		<h2 id="dataset_name">Select a dataset.. </h2>
+		<table id="table_data">
+			<tr>
+				<th>Numero nodi</th>
+				<th>Numero archi</th>
+				<th>Numero k-plessi</th>
+				<th>Numero cricche</th>
+			</tr>
+			<tr id="dataset_values">
+				<td class="numero_nodi"></td>
+				<td class="numero_archi"></td>
+				<td class="numero_kplessi"></td>
+				<td class="numero_cricche"></td>
+			</tr>
+		</table>
+
+<svg width="1160" height="500"></svg>
+<script type="text/javascript" src="main.js"></script>
+</body>
+</html>

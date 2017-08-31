@@ -1,0 +1,97 @@
+html{
+    font-family: "Fira Sans", sans-serif;
+}
+
+.container {
+    overflow: hidden;
+    background-color: #333;
+}
+
+.container a {
+    float: left;
+    font-size: 16px;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+.dropdown {
+    float: left;
+    overflow: hidden;
+}
+
+.dropdown .dropbtn {
+    cursor: pointer;
+    font-size: 16px;    
+    border: none;
+    outline: none;
+    color: white;
+    padding: 14px 16px;
+    background-color: inherit;
+    font-family: "Fira Sans", sans-serif;
+}
+
+.container a:hover, .dropdown:hover .dropbtn {
+    background-color: rgb(49, 130, 189);
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    text-decoration-color: black;
+}
+
+.dropdown-content a:hover {
+    background-color: #ddd;
+}
+
+.show {
+    display: block;
+}
+
+#navbar {
+    width: 100%;
+}
+
+table {
+    border-collapse: collapse;
+    width: 60%;
+}
+
+td, th {
+    border: 0.1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+    font-weight: normal;
+}
+
+.arc text {
+  text-anchor: middle;
+}
+
+.arc path {
+  stroke: #fff;
+}
+
+svg {
+    margin: 2em;
+    padding-top: 3em;
+}
+
+h2 {
+    font-weight: normal;
+}
