@@ -129,7 +129,7 @@ function findEdges(isClique, plexes, plexesEdges) {
 					result[i].push({node2:[]})
 				}
 				result[i][node1].push(node2)
-				result[i][node2].push(node2)
+				result[i][node2].push(node1)
 			}
 		}
 	}
