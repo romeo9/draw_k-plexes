@@ -41,12 +41,10 @@ d3.json("ndeConverter/"+dataset+".json", function(error, data){
 
 	d3.text("2-plexes/cluster_output_ca-CondMat_2_21.csv", function(error, data) {
        	if(error) throw error;
-       	plexes = d3.csvParseRows(data);
+       	plexes = d3.csvParseRows(data).sort(function(a, b){return b.length - a.length;});
 
        	createPagination(plexes)
        	drawStackedGraph(nodes, edges, plexes)
-       	
-		plexes.sort(function(a, b){return b.length - a.length;});
 
     	biggestPlexLength = plexes[0].length;
 
@@ -78,7 +76,6 @@ function drawStackedGraph(nodes, edges, plexes) {
 	var plexesNumber = plexesData[0]
 	var plexesEdges = plexesData[1]
 	var isClique = []
-
 	for (i = 0; i < plexes.length; i++) {
 		plexesLength = plexes[i].length
 		cliqueEdgeNumber = plexesLength*(plexesLength-1)
@@ -89,23 +86,94 @@ function drawStackedGraph(nodes, edges, plexes) {
 		else {
 			isClique.push(false)}
 	}
-	console.log("Cliques : " + isClique)
-	console.log("Number of edges in plex : " + plexesNumber)
-	console.log("Edges in plex : " + plexesEdges)
+	//console.log("Cliques : " + isClique)
+	//console.log("Number of edges in plex : " + plexesNumber)
+	
+	edgesInPlexes = findEdges(isClique, plexes, plexesEdges)
+	
+	//missingEdges = findMissingEdges(isClique, edgesInPlexes, plexes)
+	
+	console.log(edgesInPlexes)
+	console.log(plexes)
+	}
+
+//TODO
+function findMissingEdges(isClique, edgesInPlexes, plexes) {
+	result = []
+	return
 }
+
+
+function findEdges(isClique, plexes, plexesEdges) {
+	var result = []
+	for (i = 0; i < plexes.length; i++) {
+		result.push({})
+		for (j = 0; j < plexes[i].length; j++) {
+			var obj = {}
+			var node = plexes[i][j]
+			obj[node] = []
+			result[i][node] = []
+		}
+	}
+	//return result
+
+	for (i = 0; i < plexesEdges.length; i++) {
+		if (!isClique[i]) {
+			for (j = 0; j < plexesEdges[i].length; j++) {
+				node1 = plexesEdges[i][j].source.toString()
+				node2 = plexesEdges[i][j].target.toString()
+				if (result[i][node1] == null) {
+					result[i].push({node1:[]})
+				}
+				if (result[i][node2] == null) {
+					result[i].push({node2:[]})
+				}
+				result[i][node1].push(node2)
+				result[i][node2].push(node2)
+			}
+		}
+	}
+	return result
+}
+
+
+
+//troppo pesante
+/*
+function findMissingEdges(isClique, plexes, plexesEdges) {
+	var result = []
+	for (i = 0; i < plexes.length; i++) {
+		console.log(i)
+		result.push([])
+		if (!isClique[i]) {
+			for (j = 0; plexes[i].length; j++) {
+				//console.log(plexes[i][j])
+				for (k = j+1; k < plexes[i].length-1;) {
+					jkEdge = {source:plexes[j][k].toString(), target:plexes[k][j].toString()}
+					kjEdge = {source:plexes[k][j].toString(), target:plexes[j][k].toString()}
+					if (plexesEdges.includes(jkEdge) < 0 && plexesEdges.includes(kjEdge) < 0) {
+						result[i].push(jkEdge)
+					}
+				}
+			}
+		}
+	}
+	return result
+}
+*/
 
 function countPlexes(nodes, edges, plexes) {
 	result = Array.apply(null, Array(plexes.length)).map(Number.prototype.valueOf,0);
 	res = []
+	for (j = 0; j < plexes.length; j++) {
+		res.push([])
+	}
 	for (edge in edges) {
 		for (i = 0; i < plexes.length; i++) {
 			//if (edges[edge].source in plexes[i] && edges[edge].target in plexes[i]) {
 			if (plexes[i].includes(edges[edge].source.toString()) > 0 && plexes[i].includes(edges[edge].target.toString()) > 0) {
 				result[i] += 1;
-				if (res[i] == null) {
-					res.push([]);
-				}
-				res[i].push(edges[edge].source.toString() + "-" + edges[edge].target.toString())
+				res[i].push({source:edges[edge].source.toString(), target:edges[edge].target.toString()})
 			}
 		}
 	}
