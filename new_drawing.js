@@ -90,19 +90,38 @@ function drawStackedGraph(nodes, edges, plexes) {
 	//console.log("Number of edges in plex : " + plexesNumber)
 	
 	edgesInPlexes = findEdges(isClique, plexes, plexesEdges)
+	missingEdges = findMissingEdges(isClique, edgesInPlexes, plexes)
 	
-	//missingEdges = findMissingEdges(isClique, edgesInPlexes, plexes)
-	
-	console.log(edgesInPlexes)
-	console.log(plexes)
+	console.log(missingEdges)
+	//console.log(edgesInPlexes[2])
+	//console.log(plexes[2])
 	}
 
 //TODO
 function findMissingEdges(isClique, edgesInPlexes, plexes) {
 	result = []
-	return
+	for (i = 0; i < edgesInPlexes.length; i++) {
+		result.push({})
+		for (node in edgesInPlexes[i]) {
+			result[i][node] = []
+		}
+		if (!isClique[i]) {
+			for (node in edgesInPlexes[i]) {
+				toCompare = plexes[i]
+				toRemove = edgesInPlexes[i][node]
+				var missingEdges = toCompare.filter(function(item) {
+					return toRemove.indexOf(item) === -1;
+				})
+				if (missingEdges != undefined) {
+					index = missingEdges.indexOf(node)
+					missingEdges.splice(index, 1);
+					result[i][node].push(missingEdges)
+				}
+			}
+		}		
+	}
+	return result
 }
-
 
 function findEdges(isClique, plexes, plexesEdges) {
 	var result = []
@@ -115,7 +134,6 @@ function findEdges(isClique, plexes, plexesEdges) {
 			result[i][node] = []
 		}
 	}
-	//return result
 
 	for (i = 0; i < plexesEdges.length; i++) {
 		if (!isClique[i]) {
