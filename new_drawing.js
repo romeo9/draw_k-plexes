@@ -22,11 +22,13 @@ var canvasBorder = baseCanvas.append("rect")
 var width = baseCanvas.attr("width");
 var height = baseCanvas.attr("height");
 
-var nodes,edges, dx,dy, strokeNode, strokeEdge, raggio, fontSize, plexes;
+var nodes,edges, dx,dy, strokeNode, strokeEdge, raggio, fontSize, plexes, missingEdges, isClique;
 var toggle = 0;
 
 var dataset = "ca-CondMat"
 var plexes;
+
+var color = d3.scaleOrdinal(d3.schemeCategory20c)
 
 document.getElementById("dataset").textContent = "Dataset: "+dataset
 
@@ -44,7 +46,10 @@ d3.json("ndeConverter/"+dataset+".json", function(error, data){
        	plexes = d3.csvParseRows(data).sort(function(a, b){return b.length - a.length;});
 
        	createPagination(plexes)
+       	console.log(plexes)
+
        	drawStackedGraph(nodes, edges, plexes)
+       	console.log(isClique)
 
     	biggestPlexLength = plexes[0].length;
 
@@ -75,7 +80,7 @@ function drawStackedGraph(nodes, edges, plexes) {
 	var plexesData = countPlexes(nodes, edges, plexes)
 	var plexesNumber = plexesData[0]
 	var plexesEdges = plexesData[1]
-	var isClique = []
+	isClique = []
 	for (i = 0; i < plexes.length; i++) {
 		plexesLength = plexes[i].length
 		cliqueEdgeNumber = plexesLength*(plexesLength-1)
@@ -86,18 +91,12 @@ function drawStackedGraph(nodes, edges, plexes) {
 		else {
 			isClique.push(false)}
 	}
-	//console.log("Cliques : " + isClique)
-	//console.log("Number of edges in plex : " + plexesNumber)
 	
 	edgesInPlexes = findEdges(isClique, plexes, plexesEdges)
 	missingEdges = findMissingEdges(isClique, edgesInPlexes, plexes)
 	
-	console.log(missingEdges)
-	//console.log(edgesInPlexes[2])
-	//console.log(plexes[2])
 	}
 
-//TODO
 function findMissingEdges(isClique, edgesInPlexes, plexes) {
 	result = []
 	for (i = 0; i < edgesInPlexes.length; i++) {
@@ -288,7 +287,7 @@ function create_single_plexes(plex){
             				.attr("cx", cx)
 							.attr("cy", cy)
 							.attr("r", function(){if(raggio<1.){ return 1 }else{return raggio}})
-							.attr("fill", "red")
+							.attr("fill", color(d.data))
 							//.attr("stroke", "white")
 							//.attr("stroke-width", strokeNode)
 							
@@ -335,8 +334,6 @@ function create_single_plexes(plex){
 }
 
 function handleMouseOver(){
-
-
 	d3.select(this).select("circle").attr("r", raggio*2)
     d3.select(this).select("text").attr("font-size", parseInt(fontSize*1.6) + "px")
 
@@ -345,7 +342,6 @@ function handleMouseOver(){
 	 	.attr("stroke", "black");
 
     var idNode = node.attr("id")
-
 	var links = d3.select("g#edges").selectAll("path")
 
 
@@ -386,7 +382,6 @@ function handleMouseOut(){
 
 function draw(plex){
 	if(toggle == 1){
-
 		d3.selectAll("g").remove()
 		toggle = 0;
 		
