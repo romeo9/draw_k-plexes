@@ -44,7 +44,7 @@ function set_values() {
 		   
 	}
 	draw_piechart();
-  draw_scatter_plot();
+  	draw_bar_chart();
 }
 
 function read_graph_data() {
@@ -113,7 +113,7 @@ var pie = d3.pie()
       });   
 }
 
-function draw_scatter_plot(){
+function draw_bar_chart(){
   var svg = d3.select("svg");
   var margin = 30;
   var width = svg.attr("width")-margin;
@@ -121,7 +121,7 @@ function draw_scatter_plot(){
 
   var color = d3.scaleOrdinal(d3.schemeCategory20c)
 
-  var scatter_group = svg.append("g").attr("id", "scatter_group")
+  var scatter_group = svg.append("g").attr("id", "bar_chart")
                     .attr("transform", "translate("+ width/8.*5 +","+ 0 +") scale(.6)");
   
 
@@ -180,11 +180,11 @@ function draw_scatter_plot(){
 function handleMouseOver(d) {  
       radius = 20;
       d3.select(this).style("fill", "orange");
-      var x = d3.select(this).attr("cx");
-      var y = d3.select(this).attr("cy");
+      var x = d3.select(this).attr("x");
+      var y = d3.select(this).attr("y");
       var str = nodes.length+","+edges.length;
 
-      d3.select("#scatter_group").append("text")
+      d3.select("#bar_chart").append("text")
             .attr("id","info")
             .attr("x",x)
             .attr("y",y)

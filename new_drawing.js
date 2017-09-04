@@ -39,7 +39,7 @@ d3.json("ndeConverter/"+dataset+".json", function(error, data){
 	document.getElementById('nodeNumber').textContent = nodes.length.toString();
 	document.getElementById('edgeNumber').textContent = edges.length.toString();
 
-	d3.text("2-plexes/cluster_output_ca-CondMat_2_21.csv", function(error, data) {
+	d3.text("2-plexes/cluster_output_"+dataset+".csv", function(error, data) {
        	if(error) throw error;
        	plexes = d3.csvParseRows(data).sort(function(a, b){return b.length - a.length;});
 
