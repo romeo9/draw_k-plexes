@@ -1,5 +1,6 @@
 
 function showDropdown() {
+	console.log("showDropdown")
     document.getElementById("myDropdown").classList.toggle("show");
 }
 
@@ -16,23 +17,32 @@ width = screen.width*.95;
 height = screen.height*.65;
 
 //Gestisce l'evento click sulla schermata
-window.onclick = function(e) {
-  if (!e.target.matches('.dropbtn')) {
+var dropMenu = document.getElementById("myDropdown");
 
+dropMenu.onclick = function(e) {
+  if (!e.target.matches('.dropbtn')) {
+  	console.log(".dropbtn")
     var myDropdown = document.getElementById("myDropdown");
 
-      if (myDropdown.classList.contains('show')) {
-        myDropdown.classList.remove('show');
+      if (dropMenu.classList.contains('show')) {
+        dropMenu.classList.remove('show');
         remove_all();
       }
   }
   
   if(e.target.matches('.dataset')){
+  		console.log(".dataset")
   		datasetName = e.target.id
       	document.getElementById("dataset_name").innerHTML = "Dataset: "+datasetName;
   		read_graph_data();
       	read_kplex_data();
   }
+}
+
+window.onclick = function(e) {
+	if (dropMenu.classList.contains('show') && !e.target.matches('.dropbtn')) {
+		 dropMenu.classList.remove('show');
+	}
 }
 
 function set_values() {
