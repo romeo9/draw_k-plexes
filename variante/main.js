@@ -18,6 +18,7 @@ height = screen.height*.65;
 //Gestisce l'evento click sulla schermata
 var dropMenu = document.getElementById("myDropdown");
 
+//click on dropdown menu
 dropMenu.onclick = function(e) {
   if (!e.target.matches('.dropbtn')) {
     var myDropdown = document.getElementById("myDropdown");
@@ -36,6 +37,7 @@ dropMenu.onclick = function(e) {
   }
 }
 
+//click on window
 window.onclick = function(e) {
 	if (dropMenu.classList.contains('show') && !e.target.matches('.dropbtn')) {
 		 dropMenu.classList.remove('show');
