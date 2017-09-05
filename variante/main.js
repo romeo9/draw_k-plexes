@@ -7,10 +7,11 @@ function showDropdown() {
 //Il nome del dataset viene aggiornato quando si clicca sul tasto "Select dataset.."
 //e viene aggiornato nel metodo .onclick
 //Dopo che viene aggiornato rimane aggiornato fino al successivo click
-var datasetName, nodes, edges, isClique, plexes, width, height;
-var numberOfKplexes, numberOfCliques=0;
+var datasetName, nodes, edges, isClique, plexes, width, height, plex2numbers = [];
+var numberOfKplexes, numberOfCliques;
 var maxNumberNodes = 24000;
-var maxNumberEdges = 130497;
+var maxNumberEdges = 140000;
+var color = d3.scaleOrdinal(d3.schemeCategory20c)
 
 width = screen.width*.95;
 height = screen.height*.65;
@@ -34,8 +35,11 @@ dropMenu.onclick = function(e) {
       	document.getElementById("dataset_name").innerHTML = "Dataset: "+datasetName;
   		read_graph_data();
       	read_kplex_data();
+
+      	
   }
 }
+
 
 //click on window
 window.onclick = function(e) {
@@ -44,7 +48,50 @@ window.onclick = function(e) {
 	}
 }
 
+function create_plex2numbers(){
+	plex2numbers = []
+    var curr;
+
+    for (var i = 0; i < plexes.length; i++) {
+    	if(curr != plexes[i].length){
+	    	var singleObject = {
+	    		"id": plexes[i].length,
+	    		"cliques": 0,
+	    		"kplex": 0
+	    	}
+	    	plex2numbers.push(singleObject)
+	    }
+    	curr = plexes[i].length
+    	
+    }
+
+    for (var i = 0; i < plexes.length; i++) {
+    	var countCliques = 0;
+    	var countKplex = 0;
+    	if(isClique[i] == true) countCliques++;
+    	if(isClique[i] == false) countKplex++;
+
+    	for(var j=0; j<plex2numbers.length; j++){
+    		if(plexes[i].length == plex2numbers[j].id){
+    			plex2numbers[j].cliques += countCliques;
+    			plex2numbers[j].kplex += countKplex;
+    		}
+		}
+    }
+    
+}	
+
 function set_values() {
+
+    drawStackedGraph(nodes, edges, plexes);
+    numberOfCliques = countInArray(isClique, true)
+    create_plex2numbers();
+    console.log(plexes)
+    console.log(isClique)
+    console.log(plex2numbers)
+    
+    
+    
 	var rows = document.getElementById("dataset_values").childNodes
 	for (var i = rows.length - 1; i >= 0; i--) {
 		if(rows[i].classList == "numero_cricche"){
@@ -61,10 +108,10 @@ function set_values() {
 		}
 		   
 	}
+
 	draw_piechart();
   	draw_bar_chart();
-  	drawStackedGraph(nodes, edges, plexes)
-
+	
 }
 
 function read_graph_data() {
@@ -72,19 +119,32 @@ function read_graph_data() {
 		if(error) throw error;
 			nodes = data.nodes;
 			edges = data.links;
-			set_values();
+		set_values();
+			
 	});
 
 }
 
 function read_kplex_data() {
   d3.text("../2-plexes/cluster_output_"+datasetName+".csv", function(error, data){
-    if(error) throw error;
+    if(error) {throw error;}
+    else{
       plexes = d3.csvParseRows(data).sort(function(a, b){return b.length - a.length;});
-      numberOfKplexes = plexes.length
-
+      numberOfKplexes = plexes.length  
+  	} 
   });
 }
+
+function countInArray(array, what) {
+    var count = 0;
+    for (var i = 0; i < array.length; i++) {
+        if (array[i] === what) {
+            count++;
+        }
+    }
+    return count;
+}
+
 
 function draw_piechart() {
 	var svg = d3.select("svg");
@@ -136,58 +196,59 @@ var pie = d3.pie()
 function draw_bar_chart(){
   var svg = d3.select("svg");
   var margin = 30;
-  
-  var color = d3.scaleOrdinal(d3.schemeCategory20c)
 
-  var scatter_group = svg.append("g").attr("id", "bar_chart")
+  var bar_chart = svg.append("g").attr("id", "bar_chart")
                     .attr("transform", "translate("+ width/8.*5 +","+ 0 +") scale(.6)");
   
 
-  data = [nodes.length, edges.length]
+  data = plex2numbers.reverse()
 
-  var x = d3.scaleLinear().range([0, width-(width/2.)]);
-  var y = d3.scaleLinear().range([height, 0]);
+  var x = d3.scaleBand().range([0,width-(width/2.)]);
+  var y = d3.scaleLinear().range([height,0]);
 
   var valueline = d3.line()
-    .x(data[0])
-    .y(data[0]);
+    .x(data.length)
+    .y(plexes.length);
 
-  scatter_group.append("g")
+  bar_chart.append("g")
     .attr("transform",
           "translate(" + width/2. + "," + height/2. + ") scale(0.1)");
 
-  x.domain([0, maxNumberNodes]);
-  y.domain([0, maxNumberEdges]);
+  var maximum = d3.max(data.map(function(d){ return d.cliques+d.kplex; }))
+  x.domain(data.map(function(d){ return d.id; })).paddingInner([0.1])
+	    .paddingOuter([0.3])
+	    .align([0.5]);
+  y.domain([0, maximum]);
 
-  scatter_group.append("path")
-      .data(data)
+  bar_chart.append("path")
+      .data(data.length)
       .attr("class", "line")
       .attr("d", valueline);
 
-  scatter_group.selectAll("dot")
+  bar_chart.selectAll("dot")
       .data(data)
-    .enter().append("rect")
-      //.attr("r", 20)
-      .attr("x", function(d){return x(data[0])})
-      .attr("y", function(d){return y(data[1])} )
-      .attr("width", 20)
-      .attr("height", function(d){ return height - y(data[1]);})
-      .style("fill", function(d){return color(d.data)})
+      .enter().append("rect")
+      .attr("isClique", true)
+      .attr("x", function(d){return x(d.id)})
+      .attr("y", function(d){return y(d.cliques+d.kplex);} )
+      .attr("width", x.bandwidth())
+      .attr("height", function(d){ var temp = d.cliques+d.kplex; return height-y(temp);})
+      .style("fill", function(d){return color(d.id)})
       .on("mouseover", handleMouseOver)
-      .on("mouseout", handleMouseOut);;
+      .on("mouseout", handleMouseOut);
 
-  scatter_group.append("g")
+  bar_chart.append("g")
       .attr("id", "x_axis")
       .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(x));
-  scatter_group.append("text")
-      .attr("transform", "translate(-60, "+height/2.+") rotate(-90)").text("Numero archi");
-  scatter_group.append("text")
-      .attr("transform", "translate("+width/4.+","+height*1.1+") ").text("Numero nodi");
+  bar_chart.append("text")
+      .attr("transform", "translate(-60, "+height/2.+") rotate(-90)").text("Cricche/K-plessi");
+  bar_chart.append("text")
+      .attr("transform", "translate("+width/4.+","+height*1.1+") ").text("Numero nodi crescente");
 
 
   
-  scatter_group.append("g")
+  bar_chart.append("g")
       .attr("id","y_axis")
       .attr("transform", "translate(0,0)")
       .call(d3.axisLeft(y))
@@ -210,8 +271,8 @@ function handleMouseOver(d) {
 }
 
 function handleMouseOut(d) {
-    var color = d3.scaleOrdinal(d3.schemeCategory20c)
-    d3.select(this).style("fill", color(d.data))
+    //var color = d3.scaleOrdinal(d3.schemeCategory20c)
+    d3.select(this).style("fill", color(d.id))
     d3.select("#info").remove();  
 }
 
@@ -231,12 +292,13 @@ function drawStackedGraph(nodes, edges, plexes) {
 		cliqueEdgeNumber = cliqueEdgeNumber/2
 		if (cliqueEdgeNumber == plexesNumber[i]) {
 			isClique.push(true)
-			numberOfCliques+=1;
 		}
 		else {
 			isClique.push(false)}
 	}
 	
+	//console.log(isClique)
+	//console.log(numberOfCliques)
 	edgesInPlexes = findEdges(isClique, plexes, plexesEdges)
 	missingEdges = findMissingEdges(isClique, edgesInPlexes, plexes)
 	
@@ -316,5 +378,4 @@ function countPlexes(nodes, edges, plexes) {
 	return [result, res]
 
 }
-
 
