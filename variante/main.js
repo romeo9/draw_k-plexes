@@ -261,7 +261,7 @@ function handleMouseOver(d) {
       d3.select(this).style("fill", "orange");
       var x = d3.select(this).attr("x");
       var y = d3.select(this).attr("y");
-      var str = nodes.length+","+edges.length;
+      var str = "cliques: "+d.cliques +"  kplex: "+d.kplex
 
       d3.select("#bar_chart").append("text")
             .attr("id","info")
@@ -271,7 +271,6 @@ function handleMouseOver(d) {
 }
 
 function handleMouseOut(d) {
-    //var color = d3.scaleOrdinal(d3.schemeCategory20c)
     d3.select(this).style("fill", color(d.id))
     d3.select("#info").remove();  
 }
