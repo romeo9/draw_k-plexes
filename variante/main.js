@@ -1,6 +1,5 @@
 
 function showDropdown() {
-	console.log("showDropdown")
     document.getElementById("myDropdown").classList.toggle("show");
 }
 
@@ -21,7 +20,6 @@ var dropMenu = document.getElementById("myDropdown");
 
 dropMenu.onclick = function(e) {
   if (!e.target.matches('.dropbtn')) {
-  	console.log(".dropbtn")
     var myDropdown = document.getElementById("myDropdown");
 
       if (dropMenu.classList.contains('show')) {
@@ -31,7 +29,6 @@ dropMenu.onclick = function(e) {
   }
   
   if(e.target.matches('.dataset')){
-  		console.log(".dataset")
   		datasetName = e.target.id
       	document.getElementById("dataset_name").innerHTML = "Dataset: "+datasetName;
   		read_graph_data();
@@ -301,7 +298,6 @@ function findEdges(isClique, plexes, plexesEdges) {
 
 function countPlexes(nodes, edges, plexes) {
 	result = Array.apply(null, Array(plexes.length)).map(Number.prototype.valueOf,0);
-	console.log(plexes)
 	res = []
 	for (j = 0; j < plexes.length; j++) {
 		res.push([])
