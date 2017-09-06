@@ -8,7 +8,7 @@ function showDropdown() {
 //e viene aggiornato nel metodo .onclick
 //Dopo che viene aggiornato rimane aggiornato fino al successivo click
 var datasetName, nodes, edges, isClique, plexes, width, height, plex2numbers = [];
-var numberOfKplexes, numberOfCliques, cliques_color, kplex_color;
+var numberOfKplexes, numberOfCliques, cliques_color,dx,dy, kplex_color, raggio;
 var maxNumberNodes = 24000;
 var maxNumberEdges = 140000;
 var canvasWidth = (screen.width)/100*95
@@ -18,11 +18,18 @@ var colors = ["E87E04","26c281","F4B350"];
 cliques_color = "caebf2"
 kplex_color = "ff3B3f"
 
+var clicked = 0;
 width = screen.width*.95;
 height = screen.height*.65;
 
 //Gestisce l'evento click sulla schermata
 var dropMenu = document.getElementById("myDropdown");
+
+d3.selection.prototype.moveToFront = function() {
+  return this.each(function(){
+    this.parentNode.appendChild(this);
+  });
+};
 
 //click on dropdown menu
 dropMenu.onclick = function(e) {
@@ -55,35 +62,18 @@ window.onclick = function(e) {
 
 function create_plex2numbers(){
 	plex2numbers = []
-    var curr;
 
     for (var i = 0; i < plexes.length; i++) {
-    	if(curr != plexes[i].length){
-	    	var singleObject = {
-	    		"id": plexes[i].length,
-	    		"cliques": 0,
-	    		"kplex": 0
-	    	}
-	    	plex2numbers.push(singleObject)
+    	
+	    var singleObject = {
+	    	"id": plexes[i].length,
+	    	"isClique": isClique[i],
+	    	"index": i
 	    }
-    	curr = plexes[i].length
+	    plex2numbers.push(singleObject)
+	    
     	
     }
-
-    for (var i = 0; i < plexes.length; i++) {
-    	var countCliques = 0;
-    	var countKplex = 0;
-    	if(isClique[i] == true) countCliques++;
-    	if(isClique[i] == false) countKplex++;
-
-    	for(var j=0; j<plex2numbers.length; j++){
-    		if(plexes[i].length == plex2numbers[j].id){
-    			plex2numbers[j].cliques += countCliques;
-    			plex2numbers[j].kplex += countKplex;
-    		}
-		}
-    }
-    
 }	
 
 function set_values() {
@@ -91,11 +81,6 @@ function set_values() {
     drawStackedGraph(nodes, edges, plexes);
     numberOfCliques = countInArray(isClique, true)
     create_plex2numbers();
-    //console.log(plexes)
-    //console.log(isClique)
-    //console.log(plex2numbers)
-    
-    
     
 	var rows = document.getElementById("dataset_values").childNodes
 	for (var i = rows.length - 1; i >= 0; i--) {
@@ -135,7 +120,21 @@ function read_kplex_data() {
     if(error) {throw error;}
     else{
       plexes = d3.csvParseRows(data).sort(function(a, b){return b.length - a.length;});
-      numberOfKplexes = plexes.length  
+      numberOfKplexes = plexes.length
+      biggestPlexLength = plexes[0].length;
+
+		if(biggestPlexLength > 100){
+			dx = width/100.;
+			dy = height/100.;
+		}
+		if(biggestPlexLength < 10){
+			dx = width/20.
+			dy = height/20.
+		}
+		else{
+			dx = width/(2.*(biggestPlexLength))
+			dy = height/(2.*(biggestPlexLength))
+		}	  
   	} 
   });
 }
@@ -205,11 +204,10 @@ function draw_bar_chart(){
   barSvg.attr("width", width*.53).attr("height", height)
 
   var bar_chart = barSvg.append("g").attr("id", "bar_chart")
-                    .attr("transform", "translate(50) scale(.6)")
+                    .attr("transform", "translate(50) scale(.65)")
   
   data = plex2numbers.reverse()
-  console.log(data)
-
+  
   var x = d3.scaleBand().range([0,width-(width/2.)]);
   var y = d3.scaleLinear().range([height,0]);
 
@@ -217,21 +215,10 @@ function draw_bar_chart(){
     .x(data.length)
     .y(plexes.length);
 
-  //bar_chart.append("g")
-    //.attr("transform",
-      //    "translate(" + width/2. + "," + height/2. + ") scale(0.1)");
-
-  var maximum = d3.max(data.map(function(d){ return d.cliques+d.kplex; }))
   x.domain(data.map(function(d){ return d.id; })).paddingInner([0.1])
 	    .paddingOuter([0.3])
 	    .align([0.5]);
-  y.domain([0, maximum]);
-
-/*  bar_chart.append("path")
-      .data(data.length)
-      .attr("class", "line")
-      .attr("d", valueline);
-*/
+  y.domain([0, data.length]);
 
   var cliques_group = bar_chart.append("g")
   			.attr("id", "cliques_group")
@@ -241,40 +228,35 @@ function draw_bar_chart(){
   			.attr("id", "kplex_group")
   			.attr("fill", kplex_color)
 
-
+var count = 0;
+var idplex = data[0].id;
   cliques_group.selectAll("rect")
   				.data(data)
   				.enter()
-  				.filter(function(d){
-  					return d.cliques >=1
-  				})
   				.append("rect")
-  				.attr("isClique",true)
+  				.attr("index", function(d){return d.index})
+  				.attr("isClique",function(d){return d.isClique})
   				.attr("x", function(d){return x(d.id)})
-  				.attr("y", 0)
+  				.attr("y", function(d,i){
+  					if(idplex == d.id) {
+  						count=count+1; 
+  					}else {
+  						count = 1; 
+  						idplex = d.id
+  					}
+  					return y(count)})
   				.attr("width", x.bandwidth())
-			    .attr("height", function(d){ return (height-y(d.cliques))/parseFloat(d.cliques);})
-			    .style("fill", cliques_color)
+			    .attr("height", function(d,i){ return height/data.length})
+			    .style("fill",function(d){
+			    	if(d.isClique==true){
+			    		return cliques_color
+			    	}
+			    	return kplex_color
+			    	
+			    })
 			    .on("mouseover", handleMouseOver)
-			    .on("mouseout", handleMouseOut);
-
-
-  kplex_group.selectAll("rect")
-  				.data(data)
-  				.enter()
-  				.filter(function(d){
-
-  					return d.kplex >=1
-  				})
-  				.append("rect")
-  				.attr("isClique",false)
-  				.attr("x", function(d){return x(d.id)})
-  				.attr("y", function(d){return y(d.kplex)})
-  				.attr("width", x.bandwidth())
-			    .attr("height", function(d){ return (height-y(d.kplex))/parseFloat(d.kplex);})
-			    .style("fill", kplex_color)
-			    .on("mouseover", handleMouseOver)
-			    .on("mouseout", handleMouseOut);
+			    .on("mouseout", handleMouseOut)
+			    .on("click", clickPlex);
 
   bar_chart.append("g")
       .attr("id", "x_axis")
@@ -289,7 +271,6 @@ function draw_bar_chart(){
   
   bar_chart.append("g")
       .attr("id","y_axis")
-      .attr("transform", "translate(0,0)")
       .call(d3.axisLeft(y).tickFormat(function(d){
       	if(Math.floor(d)!= d){
       		return;
@@ -324,13 +305,31 @@ function draw_bar_chart(){
 
 
 }
+function clickPlex(){
+	if(clicked==0){
+		clicked = 1;
+		var indexPlex = d3.select(this).attr("index")
+		var nodes = plexes[indexPlex]
+		window.location.href = "#graphContainer"
+		create_single_plexes(indexPlex)
+	}
+	if(clicked == 1){
+		d3.select("#graphContainer").selectAll("g").remove()
+		clicked = 0;
+		create_single_plexes(indexPlex)
+	}
+}
+
+
 
 function handleMouseOver(d) {  
       radius = 20;
       d3.select(this).attr("stroke", "black").attr("stroke-width", "3");
       var x = d3.select(this).attr("x");
       var y = d3.select(this).attr("y");
-      var str = "cliques: "+d.cliques +"  kplex: "+d.kplex
+      var str;
+      if(d.isClique == true) str = "Cricca"
+      else str = "K-plesso"
 
       d3.select("#bar_chart").append("text")
             .attr("id","info")
@@ -354,6 +353,7 @@ function handleMouseOut(d) {
 function remove_all(){
 	d3.select("svg#pieChartContainer").selectAll("g").remove();
 	d3.select("svg#barChartContainer").selectAll("g").remove();
+	d3.select("svg#graphContainer").selectAll("g").remove();
 }
 
 
@@ -372,9 +372,7 @@ function drawStackedGraph(nodes, edges, plexes) {
 		else {
 			isClique.push(false)}
 	}
-	
-	//console.log(isClique)
-	//console.log(numberOfCliques)
+
 	edgesInPlexes = findEdges(isClique, plexes, plexesEdges)
 	missingEdges = findMissingEdges(isClique, edgesInPlexes, plexes)
 	
@@ -444,7 +442,6 @@ function countPlexes(nodes, edges, plexes) {
 	}
 	for (edge in edges) {
 		for (i = 0; i < plexes.length; i++) {
-			//if (edges[edge].source in plexes[i] && edges[edge].target in plexes[i]) {
 			if (plexes[i].includes(edges[edge].source.toString()) > 0 && plexes[i].includes(edges[edge].target.toString()) > 0) {
 				result[i] += 1;
 				res[i].push({source:edges[edge].source.toString(), target:edges[edge].target.toString()})
@@ -455,4 +452,175 @@ function countPlexes(nodes, edges, plexes) {
 
 }
 
+function create_single_plexes(plex){
+		var graphSvg = d3.select("#graphContainer");
+
+		graphSvg.attr("width", width).attr("height", height)
+
+		biggestPlexLength = plexes[plex].length
+
+		strokeEdge = dy/8.
+		strokeNode = dy/6.
+		raggio = dy/2.
+		fontSize = dy/2.2
+
+		var xRangeMin = width/4.
+		var xRangeMax = parseFloat(width) - xRangeMin
+
+		var yRangeMin = height/4.
+		var yRangeMax = parseFloat(height) - yRangeMin
+
+		var innerWidth = xRangeMax - xRangeMin
+		var innerHeight = yRangeMax - yRangeMin
+
+		var x_coordinates = []
+		for(var i = xRangeMin; i < xRangeMax; i += dx){
+			x_coordinates.push(i)
+		}
+
+		var y_coordinates = []
+		for (var i = yRangeMin; i < yRangeMax; i += dy) {
+			y_coordinates.push(i)
+		}
+		
+		if(x_coordinates.length > biggestPlexLength){
+			x_coordinates.splice(x_coordinates.length-1,1)
+		}
+		if(y_coordinates.length > biggestPlexLength){
+			y_coordinates.splice(y_coordinates.length-1,1)
+		}
+
+		var edgeGroup = graphSvg.append("g")
+									.attr("id", "edges");
+		var nodeGroup = graphSvg.append("g")
+									.attr("id", "nodes");
+
+		var edge = edgeGroup.selectAll("path")
+				.data(edges)
+				.enter().filter(function(d){
+					return plexes[plex].includes(String(d.source)) && plexes[plex].includes(String(d.target))
+				})
+				.append("path")
+				.attr("id", function(d){return d.source+"-"+d.target})
+				.attr("source", function(d){return d.source})
+				.attr("target", function(d){return d.target})
+				.attr("stroke", "#dbdde6")
+				.attr("stroke-width", strokeEdge)
+				.attr("fill", "transparent");
+
+		var node = nodeGroup.selectAll("circle")
+		.data(plexes[plex])
+		.enter()
+		.each(function(d) {
+			var header = d3.select(this);
+            var x_index = Math.floor(Math.random()*x_coordinates.length);
+            var y_index = Math.floor(Math.random()*y_coordinates.length);
+            
+            if((x_coordinates[x_index] != null) && (y_coordinates[y_index] != null)) {
+
+            	var cx = x_coordinates[x_index];
+            	var cy = y_coordinates[y_index];
+
+            	var circleNode = header.append("g")
+            							.attr("id",function(d){return d})
+            							.on("mouseover", nodeMouseOver)
+										.on("mouseout", nodeMouseOut);
+
+            	circleNode.append("circle")
+            				.attr("id", d)
+            				.attr("cx", cx)
+							.attr("cy", cy)
+							.attr("r", function(){if(raggio<1.){ return 1 }else{return raggio}})
+							.attr("fill", "#56cd66")
+							.attr("stroke", "white")
+							.attr("stroke-width", .1)
+							
+            	
+            	x_coordinates.splice(x_index, 1);
+            	y_coordinates.splice(y_index, 1);
+            	
+            	circleNode.append("text")
+					.text(function(d) {return d;})
+					.attr("id", d)
+					.attr("x",cx)
+					.attr("y",cy+2)
+					.attr("text-anchor", "middle")
+					.attr("font-size", parseInt(fontSize) + "px")
+					.attr("fill", "white")
+					.attr("font-family", "sans-serif")
+
+			
+			
+		}
+
+		});
+		
+		edge.attr("d", function(d){
+
+			//coordinate punto sorgente
+			var x1 = d3.select("g[id='"+d.source+"']").select("circle").attr("cx")
+			var y1 = d3.select("g[id='"+d.source+"']").select("circle").attr("cy")
+
+			//coordinate punto target
+			var x2 = d3.select("g[id='"+d.target+"']").select("circle").attr("cx")
+			var y2 = d3.select("g[id='"+d.target+"']").select("circle").attr("cy")
+
+			
+
+			var lineGenerator = d3.line()
+			var line;
+			line = lineGenerator([[x1,y1],[x1,y2],[x2,y2]]);
+				
+			return line
+
+			});
+
+}
+
+function nodeMouseOver(){
+	d3.select(this).select("circle").attr("r", raggio*3)
+    d3.select(this).select("text").attr("font-size", parseInt(fontSize*2.6) + "px")
+
+    var node = d3.select(this).select("circle")
+		node.attr("stroke-width", strokeNode)
+	 	.attr("stroke", "black");
+
+    var idNode = node.attr("id")
+	var links = d3.select("g#edges").selectAll("path")
+
+
+	links.filter(function(d){
+
+		//Mostra solo archi uscenti
+		if(d.source == idNode){
+			d3.select("g[id='nodes']").select("g[id='"+d.target+"']").select("circle").attr("stroke-width", strokeNode)
+	 				.attr("stroke", "black");
+	 		return true;
+		}
+
+		//Mostra solo archi entranti
+		if(d.target == idNode){
+			d3.select("g#nodes").select("g[id='"+d.source+"']").select("circle").attr("stroke-width", strokeNode)
+	 					.attr("stroke", "black");
+	 		return true;
+		}
+
+		return false;
+	}).attr("stroke", "black")
+	.attr("stroke-width", strokeEdge+ strokeEdge*2)
+	.moveToFront();
+
+}
+
+function nodeMouseOut(){
+	d3.select(this).select("circle").attr("r", raggio)
+    d3.select(this).select("text").attr("font-size", parseInt(fontSize) + "px")
+
+    var node = d3.selectAll("circle")
+	node.attr("stroke-width", 0)
+	.attr("stroke", "none");
+
+	var links = d3.selectAll("path").attr("stroke", "#dbdde6")
+				.attr("stroke-width", strokeEdge)
+}
 
