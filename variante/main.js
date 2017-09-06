@@ -8,10 +8,12 @@ function showDropdown() {
 //e viene aggiornato nel metodo .onclick
 //Dopo che viene aggiornato rimane aggiornato fino al successivo click
 var datasetName, nodes, edges, isClique, plexes, width, height, plex2numbers = [];
-var numberOfKplexes, numberOfCliques;
+var numberOfKplexes, numberOfCliques, cliques_color, kplex_color;
 var maxNumberNodes = 24000;
 var maxNumberEdges = 140000;
 var color = d3.scaleOrdinal(d3.schemeCategory20c)
+cliques_color = "#6b486b"
+kplex_color = "#a05d56"
 
 width = screen.width*.95;
 height = screen.height*.65;
@@ -167,7 +169,7 @@ var pie = d3.pie()
     .value(function(d) { return d; });
 
    var pie_group = svg.append("g").attr("id", "pie_group")
-    .attr("transform", "translate(" + width / 4. + "," + height / 4. + ") scale(.5)");
+    .attr("transform", "translate(" + width / 5. + "," + height / 4. + ") scale(.5)");
 
     var data = [nodes.length, numberOfKplexes, edges.length ]
 
@@ -194,11 +196,12 @@ var pie = d3.pie()
 }
 
 function draw_bar_chart(){
+  
   var svg = d3.select("svg");
   var margin = 30;
 
   var bar_chart = svg.append("g").attr("id", "bar_chart")
-                    .attr("transform", "translate("+ width/8.*5 +","+ 0 +") scale(.6)");
+                    .attr("transform", "translate("+ width/9.*5 +","+ 0 +") scale(.6)");
   
 
   data = plex2numbers.reverse()
@@ -210,9 +213,9 @@ function draw_bar_chart(){
     .x(data.length)
     .y(plexes.length);
 
-  bar_chart.append("g")
-    .attr("transform",
-          "translate(" + width/2. + "," + height/2. + ") scale(0.1)");
+  //bar_chart.append("g")
+    //.attr("transform",
+      //    "translate(" + width/2. + "," + height/2. + ") scale(0.1)");
 
   var maximum = d3.max(data.map(function(d){ return d.cliques+d.kplex; }))
   x.domain(data.map(function(d){ return d.id; })).paddingInner([0.1])
@@ -220,22 +223,53 @@ function draw_bar_chart(){
 	    .align([0.5]);
   y.domain([0, maximum]);
 
-  bar_chart.append("path")
+/*  bar_chart.append("path")
       .data(data.length)
       .attr("class", "line")
       .attr("d", valueline);
+*/
 
-  bar_chart.selectAll("dot")
-      .data(data)
-      .enter().append("rect")
-      .attr("isClique", true)
-      .attr("x", function(d){return x(d.id)})
-      .attr("y", function(d){return y(d.cliques+d.kplex);} )
-      .attr("width", x.bandwidth())
-      .attr("height", function(d){ var temp = d.cliques+d.kplex; return height-y(temp);})
-      .style("fill", function(d){return color(d.id)})
-      .on("mouseover", handleMouseOver)
-      .on("mouseout", handleMouseOut);
+  var cliques_group = bar_chart.append("g")
+  			.attr("id", "cliques_group")
+  			.attr("fill", cliques_color)
+
+  var kplex_group = bar_chart.append("g")
+  			.attr("id", "kplex_group")
+  			.attr("fill", kplex_color)
+
+
+  cliques_group.selectAll("rect")
+  				.data(data)
+  				.enter()
+  				.filter(function(d){
+  					return d.cliques >=1
+  				})
+  				.append("rect")
+  				.attr("isClique",true)
+  				.attr("x", function(d){return x(d.id)})
+  				.attr("y", 0)
+  				.attr("width", x.bandwidth())
+			    .attr("height", function(d){ var temp = d.cliques; return height-y(temp);})
+			    //.style("fill", function(d){return color(d.id)})
+			    .on("mouseover", handleMouseOver)
+			    .on("mouseout", handleMouseOut);
+
+
+  kplex_group.selectAll("rect")
+  				.data(data)
+  				.enter()
+  				.filter(function(d){
+  					return d.kplex >=1
+  				})
+  				.append("rect")
+  				.attr("isClique",false)
+  				.attr("x", function(d){return x(d.id)})
+  				.attr("y", function(d){return y(d.kplex)})
+  				.attr("width", x.bandwidth())
+			    .attr("height", function(d){ var temp = d.kplex; return height-y(temp);})
+			    //.style("fill", function(d){return color(d.id)})
+			    .on("mouseover", handleMouseOver)
+			    .on("mouseout", handleMouseOut);
 
   bar_chart.append("g")
       .attr("id", "x_axis")
@@ -254,6 +288,31 @@ function draw_bar_chart(){
       .call(d3.axisLeft(y))
       .append("text").text("Numero Archi");
 
+
+  var legend = bar_chart.append("g")
+  	 .attr("id", "legend")
+  	 .attr("transform", "translate("+width/2.+",0)")
+
+  var cliques_legend = legend.append("rect")
+  		.attr("id", "cliques_legend")
+  		.attr("height", 20)
+  		.attr("width", 20)
+  		.style("fill", cliques_color)
+
+  	legend.append("text").text("Cricche")
+  		.attr("transform", "translate(30,15)")
+
+  var kplex_legend =legend.append("rect")
+  		.attr("id", "kplex_legend")
+  		.attr("height", 20)
+  		.attr("width", 20)
+  		.style("fill", kplex_color)
+  		.attr("transform", "translate(0,"+40+")")
+
+  	legend.append("text").text("Kplessi")
+  		.attr("transform", "translate(30,55)")
+
+
 }
 
 function handleMouseOver(d) {  
@@ -266,12 +325,19 @@ function handleMouseOver(d) {
       d3.select("#bar_chart").append("text")
             .attr("id","info")
             .attr("x",x)
-            .attr("y",y)
+            .attr("y",y-20)
             .text(str);
 }
 
 function handleMouseOut(d) {
-    d3.select(this).style("fill", color(d.id))
+    var nodo = d3.select(this)
+    if(nodo.attr("isClique") == "true"){
+    	nodo.style("fill", cliques_color)
+    }
+    if(nodo.attr("isClique") == "false"){
+    	nodo.style("fill", kplex_color)
+    }
+    
     d3.select("#info").remove();  
 }
 
@@ -377,4 +443,5 @@ function countPlexes(nodes, edges, plexes) {
 	return [result, res]
 
 }
+
 
