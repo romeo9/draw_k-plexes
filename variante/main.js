@@ -11,7 +11,10 @@ var datasetName, nodes, edges, isClique, plexes, width, height, plex2numbers = [
 var numberOfKplexes, numberOfCliques, cliques_color, kplex_color;
 var maxNumberNodes = 24000;
 var maxNumberEdges = 140000;
+var canvasWidth = (screen.width)/100*95
+var canvasHeight = (screen.height)
 var color = d3.scaleOrdinal(d3.schemeCategory20c)
+//var mainContainer = d3.select("#mainContainer").attr("width", canvasWidth).attr("height", canvasHeight)
 cliques_color = "#6b486b"
 kplex_color = "#a05d56"
 
@@ -149,9 +152,9 @@ function countInArray(array, what) {
 
 
 function draw_piechart() {
-	var svg = d3.select("svg");
+	var pieSvg = d3.select("#pieChartContainer");
 	
-	svg.attr("width", width).attr("height", height)
+	pieSvg.attr("width", width*.4).attr("height", height)
 
 	var color = d3.scaleOrdinal(d3.schemeCategory20c)
 
@@ -168,7 +171,7 @@ var pie = d3.pie()
     .sort(null)
     .value(function(d) { return d; });
 
-   var pie_group = svg.append("g").attr("id", "pie_group")
+   var pie_group = pieSvg.append("g").attr("id", "pie_group")
     .attr("transform", "translate(" + width / 5. + "," + height / 4. + ") scale(.5)");
 
     var data = [nodes.length, numberOfKplexes, edges.length ]
@@ -196,14 +199,14 @@ var pie = d3.pie()
 }
 
 function draw_bar_chart(){
-  
-  var svg = d3.select("svg");
-  var margin = 30;
 
-  var bar_chart = svg.append("g").attr("id", "bar_chart")
-                    .attr("transform", "translate("+ width/9.*5 +","+ 0 +") scale(.6)");
+  var barSvg = d3.select("#barChartContainer");
   
+  barSvg.attr("width", width*.53).attr("height", height)
 
+  var bar_chart = barSvg.append("g").attr("id", "bar_chart")
+                    .attr("transform", "translate(50) scale(.6)")
+  
   data = plex2numbers.reverse()
 
   var x = d3.scaleBand().range([0,width-(width/2.)]);

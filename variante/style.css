@@ -92,6 +92,10 @@ svg {
     padding-top: 3em;
 }
 
+.charts {
+    float:left;
+}
+
 h2 {
     font-weight: normal;
 }
