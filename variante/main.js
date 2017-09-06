@@ -13,10 +13,10 @@ var maxNumberNodes = 24000;
 var maxNumberEdges = 140000;
 var canvasWidth = (screen.width)/100*95
 var canvasHeight = (screen.height)
-var color = d3.scaleOrdinal(d3.schemeCategory20c)
+var colors = ["E87E04","26c281","F4B350"];
 //var mainContainer = d3.select("#mainContainer").attr("width", canvasWidth).attr("height", canvasHeight)
-cliques_color = "#6b486b"
-kplex_color = "#a05d56"
+cliques_color = "caebf2"
+kplex_color = "ff3B3f"
 
 width = screen.width*.95;
 height = screen.height*.65;
@@ -91,9 +91,9 @@ function set_values() {
     drawStackedGraph(nodes, edges, plexes);
     numberOfCliques = countInArray(isClique, true)
     create_plex2numbers();
-    console.log(plexes)
-    console.log(isClique)
-    console.log(plex2numbers)
+    //console.log(plexes)
+    //console.log(isClique)
+    //console.log(plex2numbers)
     
     
     
@@ -156,7 +156,7 @@ function draw_piechart() {
 	
 	pieSvg.attr("width", width*.4).attr("height", height)
 
-	var color = d3.scaleOrdinal(d3.schemeCategory20c)
+	//var color = d3.scaleOrdinal(d3.schemeCategory20c)
 
     var radius = Math.min(width, height) / 2;
    var arc = d3.arc()
@@ -183,7 +183,7 @@ var pie = d3.pie()
 
   g.append("path")
       .attr("d", arc)
-      .style("fill", function(d) { return color(d.data); });
+      .style("fill", function(d,i) { return colors[i]; });
 
   g.append("text")
    .attr("transform", function(d) { return "translate(" + labelArc.centroid(d) + "), scale(1.5)"; }).transition()
@@ -208,6 +208,7 @@ function draw_bar_chart(){
                     .attr("transform", "translate(50) scale(.6)")
   
   data = plex2numbers.reverse()
+  console.log(data)
 
   var x = d3.scaleBand().range([0,width-(width/2.)]);
   var y = d3.scaleLinear().range([height,0]);
@@ -252,8 +253,8 @@ function draw_bar_chart(){
   				.attr("x", function(d){return x(d.id)})
   				.attr("y", 0)
   				.attr("width", x.bandwidth())
-			    .attr("height", function(d){ var temp = d.cliques; return height-y(temp);})
-			    //.style("fill", function(d){return color(d.id)})
+			    .attr("height", function(d){ return (height-y(d.cliques))/parseFloat(d.cliques);})
+			    .style("fill", cliques_color)
 			    .on("mouseover", handleMouseOver)
 			    .on("mouseout", handleMouseOut);
 
@@ -262,6 +263,7 @@ function draw_bar_chart(){
   				.data(data)
   				.enter()
   				.filter(function(d){
+
   					return d.kplex >=1
   				})
   				.append("rect")
@@ -269,8 +271,8 @@ function draw_bar_chart(){
   				.attr("x", function(d){return x(d.id)})
   				.attr("y", function(d){return y(d.kplex)})
   				.attr("width", x.bandwidth())
-			    .attr("height", function(d){ var temp = d.kplex; return height-y(temp);})
-			    //.style("fill", function(d){return color(d.id)})
+			    .attr("height", function(d){ return (height-y(d.kplex))/parseFloat(d.kplex);})
+			    .style("fill", kplex_color)
 			    .on("mouseover", handleMouseOver)
 			    .on("mouseout", handleMouseOut);
 
@@ -288,7 +290,12 @@ function draw_bar_chart(){
   bar_chart.append("g")
       .attr("id","y_axis")
       .attr("transform", "translate(0,0)")
-      .call(d3.axisLeft(y))
+      .call(d3.axisLeft(y).tickFormat(function(d){
+      	if(Math.floor(d)!= d){
+      		return;
+      	}
+      	return d;
+      }))
       .append("text").text("Numero Archi");
 
 
@@ -320,7 +327,7 @@ function draw_bar_chart(){
 
 function handleMouseOver(d) {  
       radius = 20;
-      d3.select(this).style("fill", "orange");
+      d3.select(this).attr("stroke", "black").attr("stroke-width", "3");
       var x = d3.select(this).attr("x");
       var y = d3.select(this).attr("y");
       var str = "cliques: "+d.cliques +"  kplex: "+d.kplex
@@ -335,17 +342,18 @@ function handleMouseOver(d) {
 function handleMouseOut(d) {
     var nodo = d3.select(this)
     if(nodo.attr("isClique") == "true"){
-    	nodo.style("fill", cliques_color)
+    	nodo.attr("stroke-width", 0)
     }
     if(nodo.attr("isClique") == "false"){
-    	nodo.style("fill", kplex_color)
+    	nodo.attr("stroke-width", 0)
     }
     
     d3.select("#info").remove();  
 }
 
 function remove_all(){
-	d3.select("svg").selectAll("g").remove();
+	d3.select("svg#pieChartContainer").selectAll("g").remove();
+	d3.select("svg#barChartContainer").selectAll("g").remove();
 }
 
 
