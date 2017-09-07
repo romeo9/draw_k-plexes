@@ -308,11 +308,15 @@ var idplex = data[0].id;
 
 }
 function clickPlex(){
+	var cliqueness = d3.select(this).attr("isClique")
+
 	if(clicked==0){
 		clicked = 1;
 		var indexPlex = d3.select(this).attr("index")
+		
 		var nodes = plexes[indexPlex]
 		window.location.href = "#graphContainer"
+		document.getElementById("goTopButton").style.display = "block"
 		create_single_plexes(indexPlex)
 	}
 	if(clicked == 1){
@@ -327,6 +331,21 @@ function clickPlex(){
 		title.style.height = "4em"
 		title.style.paddingTop = "2em"
 
+
+		if(cliqueness == "false"){
+			var input = document.createElement("input");
+			input.type = "checkbox"
+
+			var divCheckbox = document.getElementById("checkboxKplex")
+			divCheckbox.style.display = "block"
+			divCheckbox.textContent = "Show missing edges"
+			divCheckbox.style.color = "black"
+			divCheckbox.appendChild(input)
+		}else{
+			d3.select("#checkboxKplex").selectAll("input").remove()
+			document.getElementById("checkboxKplex").innerHTML = ""
+		}
+		
 		create_single_plexes(indexPlex)
 	}
 }
@@ -365,6 +384,7 @@ function remove_all(){
 	d3.select("svg#pieChartContainer").selectAll("g").remove();
 	d3.select("svg#barChartContainer").selectAll("g").remove();
 	d3.select("svg#graphContainer").selectAll("g").remove();
+	document.getElementById("checkboxKplex").style.display = "none"
 }
 
 
@@ -648,3 +668,17 @@ function nodeMouseOut(){
 				.attr("stroke-width", strokeEdge)
 }
 
+function topFunction() {
+    document.body.scrollTop = 0; // For Chrome, Safari and Opera 
+    document.documentElement.scrollTop = 0; // For IE and Firefox
+}
+
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("goTopButton").style.display = "block";
+    } else {
+        document.getElementById("goTopButton").style.display = "none";
+    }
+}
