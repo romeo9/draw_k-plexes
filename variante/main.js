@@ -121,6 +121,7 @@ function read_kplex_data() {
     else{
       plexes = d3.csvParseRows(data).sort(function(a, b){return b.length - a.length;});
       numberOfKplexes = plexes.length
+      /*
       biggestPlexLength = plexes[0].length;
 
 		if(biggestPlexLength > 100){
@@ -134,7 +135,8 @@ function read_kplex_data() {
 		else{
 			dx = width/(2.*(biggestPlexLength))
 			dy = height/(2.*(biggestPlexLength))
-		}	  
+		}
+		*/	  
   	} 
   });
 }
@@ -384,7 +386,7 @@ function drawStackedGraph(nodes, edges, plexes) {
 
 	edgesInPlexes = findEdges(isClique, plexes, plexesEdges)
 	missingEdges = findMissingEdges(isClique, edgesInPlexes, plexes)
-	
+	console.log(missingEdges)
 	}
 
 function findMissingEdges(isClique, edgesInPlexes, plexes) {
@@ -462,11 +464,24 @@ function countPlexes(nodes, edges, plexes) {
 }
 
 function create_single_plexes(plex){
-		var graphSvg = d3.select("#graphContainer");
+		var graphSvg = d3.select("#graphContainer")//.attr("transform","scale(1.5)");
 
 		graphSvg.attr("width", width).attr("height", height)
 
 		biggestPlexLength = plexes[plex].length
+
+		if(biggestPlexLength > 100){
+			dx = width/100.;
+			dy = height/100.;
+		}
+		if(biggestPlexLength < 10){
+			dx = width/20.
+			dy = height/20.
+		}
+		else{
+			dx = width/(2.*(biggestPlexLength))
+			dy = height/(2.*(biggestPlexLength))
+		}
 
 		strokeEdge = dy/8.
 		strokeNode = dy/6.
