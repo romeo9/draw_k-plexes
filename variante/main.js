@@ -152,8 +152,8 @@ function countInArray(array, what) {
 
 function draw_piechart() {
 	var pieSvg = d3.select("#pieChartContainer");
-	
-	pieSvg.attr("width", width*.4).attr("height", height)
+
+	pieSvg.attr("width", width*.5).attr("height", height*.6)
 
 	//var color = d3.scaleOrdinal(d3.schemeCategory20c)
 
@@ -201,10 +201,10 @@ function draw_bar_chart(){
 
   var barSvg = d3.select("#barChartContainer");
   
-  barSvg.attr("width", width*.53).attr("height", height)
+  barSvg.attr("width", width*.5).attr("height", height)
 
   var bar_chart = barSvg.append("g").attr("id", "bar_chart")
-                    .attr("transform", "translate(50) scale(.65)")
+                    .attr("transform", "translate("+width/8.+") scale(.65)")
   
   data = plex2numbers.reverse()
   
@@ -316,6 +316,15 @@ function clickPlex(){
 	if(clicked == 1){
 		d3.select("#graphContainer").selectAll("g").remove()
 		clicked = 0;
+		var title = document.getElementById("graphTitle")
+		title.style.display = "block"
+		title.style.textAlign = "center"
+		title.style.backgroundColor = "#333"
+		title.style.color = "white"
+		title.style.borderRadius = "17px"
+		title.style.height = "4em"
+		title.style.paddingTop = "2em"
+
 		create_single_plexes(indexPlex)
 	}
 }
@@ -531,7 +540,7 @@ function create_single_plexes(plex){
             				.attr("cx", cx)
 							.attr("cy", cy)
 							.attr("r", function(){if(raggio<1.){ return 1 }else{return raggio}})
-							.attr("fill", "#56cd66")
+							.attr("fill", "#6c84ed")
 							.attr("stroke", "white")
 							.attr("stroke-width", .1)
 							

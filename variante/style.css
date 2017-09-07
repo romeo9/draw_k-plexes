@@ -99,8 +99,7 @@ td, th {
 }
 
 svg {
-    margin: 2em;
-    padding-top: 2em;
+    padding-top: 1em;
 }
 
 .charts {
@@ -119,4 +118,19 @@ h1 {
     padding-left: 20px;
     color: white;
     text-align: center;
+}
+
+#pieChartContainer {
+    padding-top: 4em;
+    margin-top: 2em;
+}
+
+#barChartContainer {
+    margin-top: 2em;
+    padding-top: 2em;
+}
+
+#graphTitle{
+    text-align: center;
+    display: none;
 }
