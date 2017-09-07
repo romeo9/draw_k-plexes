@@ -8,7 +8,7 @@ function showDropdown() {
 //e viene aggiornato nel metodo .onclick
 //Dopo che viene aggiornato rimane aggiornato fino al successivo click
 var datasetName, nodes, edges, isClique, plexes, width, height, plex2numbers = [];
-var numberOfKplexes, numberOfCliques, cliques_color,dx,dy, kplex_color, raggio;
+var numberOfKplexes, numberOfCliques, cliques_color,dx,dy, kplex_color, nodeRadius;
 var maxNumberNodes = 24000;
 var maxNumberEdges = 140000;
 var canvasWidth = (screen.width)/100*95
@@ -468,49 +468,47 @@ function create_single_plexes(plex){
 
 		graphSvg.attr("width", width).attr("height", height)
 
-		biggestPlexLength = plexes[plex].length
+		plexLength = plexes[plex].length
 
-		if(biggestPlexLength > 100){
-			dx = width/100.;
-			dy = height/100.;
-		}
-		if(biggestPlexLength < 10){
-			dx = width/20.
-			dy = height/20.
-		}
-		else{
-			dx = width/(2.*(biggestPlexLength))
-			dy = height/(2.*(biggestPlexLength))
-		}
 
-		strokeEdge = dy/8.
-		strokeNode = dy/6.
-		raggio = dy/2.
-		fontSize = dy/2.2
 
-		var xRangeMin = width/4.
-		var xRangeMax = parseFloat(width) - xRangeMin
+		var xRangeMin = parseInt(width/8.)
+		var xRangeMax = parseInt(width - xRangeMin)
 
-		var yRangeMin = height/4.
-		var yRangeMax = parseFloat(height) - yRangeMin
+		var yRangeMin = parseInt(height/8.)
+		var yRangeMax = parseInt(height - yRangeMin)
 
 		var innerWidth = xRangeMax - xRangeMin
 		var innerHeight = yRangeMax - yRangeMin
 
+    if(plexLength < 10){
+      coordX = innerWidth/20.
+      coordY = innerHeight/20.
+    }
+    else{
+      coordX = innerWidth/plexLength
+      coordY = innerHeight/plexLength
+    }
+
+    strokeEdge = coordY/8.
+    strokeNode = coordY/6.
+    nodeRadius = coordY/1.2
+    fontSize = coordY/1.6
+
 		var x_coordinates = []
-		for(var i = xRangeMin; i < xRangeMax; i += dx){
+		for(var i = xRangeMin; i < xRangeMax; i += coordX){
 			x_coordinates.push(i)
 		}
 
 		var y_coordinates = []
-		for (var i = yRangeMin; i < yRangeMax; i += dy) {
+		for (var i = yRangeMin; i < yRangeMax; i += coordY) {
 			y_coordinates.push(i)
 		}
 		
-		if(x_coordinates.length > biggestPlexLength){
+		if(x_coordinates.length > plexLength){
 			x_coordinates.splice(x_coordinates.length-1,1)
 		}
-		if(y_coordinates.length > biggestPlexLength){
+		if(y_coordinates.length > plexLength){
 			y_coordinates.splice(y_coordinates.length-1,1)
 		}
 
@@ -554,7 +552,7 @@ function create_single_plexes(plex){
             				.attr("id", d)
             				.attr("cx", cx)
 							.attr("cy", cy)
-							.attr("r", function(){if(raggio<1.){ return 1 }else{return raggio}})
+							.attr("r", function(){if(nodeRadius<1.){ return 1 }else{return nodeRadius}})
 							.attr("fill", "#6c84ed")
 							.attr("stroke", "white")
 							.attr("stroke-width", .1)
@@ -602,7 +600,7 @@ function create_single_plexes(plex){
 }
 
 function nodeMouseOver(){
-	d3.select(this).select("circle").attr("r", raggio*3)
+	d3.select(this).select("circle").attr("r", nodeRadius*3)
     d3.select(this).select("text").attr("font-size", parseInt(fontSize*2.6) + "px")
 
     var node = d3.select(this).select("circle")
@@ -637,7 +635,7 @@ function nodeMouseOver(){
 }
 
 function nodeMouseOut(){
-	d3.select(this).select("circle").attr("r", raggio)
+	d3.select(this).select("circle").attr("r", nodeRadius)
     d3.select(this).select("text").attr("font-size", parseInt(fontSize) + "px")
 
     var node = d3.selectAll("circle")
