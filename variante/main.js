@@ -22,6 +22,8 @@ var clicked = 0;
 width = screen.width*.95;
 height = screen.height*.65;
 
+var showMissingEdges = false;
+
 //Gestisce l'evento click sulla schermata
 var dropMenu = document.getElementById("myDropdown");
 
@@ -46,18 +48,37 @@ dropMenu.onclick = function(e) {
   		datasetName = e.target.id
       	document.getElementById("dataset_name").innerHTML = "Dataset: "+datasetName;
   		read_graph_data();
-      	read_kplex_data();
-
-      	
+      	read_kplex_data(); 	
   }
+
 }
 
 
 //click on window
 window.onclick = function(e) {
+
 	if (dropMenu.classList.contains('show') && !e.target.matches('.dropbtn')) {
 		 dropMenu.classList.remove('show');
 	}
+
+	
+	if(e.target.matches('#missingEdgesCheckbox')){
+		showMissingEdges = e.target.checked
+
+		console.log(showMissingEdges)
+		if(showMissingEdges == true){
+			console.log("ciaone")
+			d3.select("g#missingEdgesGroup").selectAll("path").attr("stroke", "red")
+							.attr("stroke-width", strokeEdge)
+							.attr("fill", "transparent")
+		}
+		if(showMissingEdges == false){
+			d3.select("g#missingEdgesGroup").selectAll("path").attr("stroke", "none")
+							.attr("stroke-width", strokeEdge)
+							.attr("fill", "transparent")
+		}
+	}
+	
 }
 
 function create_plex2numbers(){
@@ -121,22 +142,7 @@ function read_kplex_data() {
     else{
       plexes = d3.csvParseRows(data).sort(function(a, b){return b.length - a.length;});
       numberOfKplexes = plexes.length
-      /*
-      biggestPlexLength = plexes[0].length;
-
-		if(biggestPlexLength > 100){
-			dx = width/100.;
-			dy = height/100.;
-		}
-		if(biggestPlexLength < 10){
-			dx = width/20.
-			dy = height/20.
-		}
-		else{
-			dx = width/(2.*(biggestPlexLength))
-			dy = height/(2.*(biggestPlexLength))
-		}
-		*/	  
+    
   	} 
   });
 }
@@ -307,6 +313,7 @@ var idplex = data[0].id;
 
 
 }
+
 function clickPlex(){
 	var cliqueness = d3.select(this).attr("isClique")
 
@@ -333,10 +340,11 @@ function clickPlex(){
 
 
 		if(cliqueness == "false"){
-			var input = document.createElement("input");
+			input = document.createElement("input");
 			input.type = "checkbox"
+			input.id = "missingEdgesCheckbox"
 
-			var divCheckbox = document.getElementById("checkboxKplex")
+			divCheckbox = document.getElementById("checkboxKplex")
 			divCheckbox.style.display = "block"
 			divCheckbox.textContent = "Show missing edges"
 			divCheckbox.style.color = "black"
@@ -538,7 +546,7 @@ function create_single_plexes(plex){
 		var nodeGroup = graphSvg.append("g")
 									.attr("id", "nodes");
 
-		if(isClique[plex] != true) missingGroup = graphSvg.append("g").attr("id","missingEdgesGroup")
+		var missingGroup = graphSvg.append("g").attr("id","missingEdgesGroup")
 
 		var edge = edgeGroup.selectAll("path")
 				.data(edges)
@@ -557,14 +565,13 @@ function create_single_plexes(plex){
 		
 		var datatemp = []
 
-		for(var k in dataMissEdges){
-
+		for(k in dataMissEdges){
 			datatemp.push({
 				"id":k,
 				"edges": dataMissEdges[k][0]
 			})
-			
 		}
+
 		
 		var node = nodeGroup.selectAll("circle")
 		.data(plexes[plex])
@@ -635,7 +642,9 @@ function create_single_plexes(plex){
 
 			}).attr("missing", false);
 
+		
 		if(isClique[plex] != true){
+
 			edgeMiss = missingGroup.selectAll("path")
 					.data(datatemp)
 					.enter().filter(function(d){
@@ -647,8 +656,9 @@ function create_single_plexes(plex){
 					})
 					.attr("source", function(d){return d.id})
 					.attr("target", function(d){return d.edges[0]})
-					.attr("stroke", "red")
-					.attr("stroke-width", strokeEdge)
+					.attr("stroke", "none")
+					.attr("stroke-dasharray", 5.5)
+					.attr("stroke-width", 0)
 					.attr("fill", "transparent")
 					.attr("missing", true);
 
@@ -669,6 +679,8 @@ function create_single_plexes(plex){
 				return line
 
 				});
+
+
 		}
 
 }
@@ -735,3 +747,4 @@ function scrollFunction() {
         document.getElementById("goTopButton").style.display = "none";
     }
 }
+
