@@ -317,7 +317,7 @@ function clickPlex(){
 		var nodes = plexes[indexPlex]
 		window.location.href = "#graphContainer"
 		document.getElementById("goTopButton").style.display = "block"
-		create_single_plexes(indexPlex)
+		
 	}
 	if(clicked == 1){
 		d3.select("#graphContainer").selectAll("g").remove()
@@ -407,6 +407,7 @@ function drawStackedGraph(nodes, edges, plexes) {
 	edgesInPlexes = findEdges(isClique, plexes, plexesEdges)
 	missingEdges = findMissingEdges(isClique, edgesInPlexes, plexes)
 	console.log(missingEdges)
+
 	}
 
 function findMissingEdges(isClique, edgesInPlexes, plexes) {
@@ -537,6 +538,8 @@ function create_single_plexes(plex){
 		var nodeGroup = graphSvg.append("g")
 									.attr("id", "nodes");
 
+		if(isClique[plex] != true) missingGroup = graphSvg.append("g").attr("id","missingEdgesGroup")
+
 		var edge = edgeGroup.selectAll("path")
 				.data(edges)
 				.enter().filter(function(d){
@@ -550,6 +553,19 @@ function create_single_plexes(plex){
 				.attr("stroke-width", strokeEdge)
 				.attr("fill", "transparent");
 
+		var dataMissEdges = missingEdges[plex]
+		
+		var datatemp = []
+
+		for(var k in dataMissEdges){
+
+			datatemp.push({
+				"id":k,
+				"edges": dataMissEdges[k][0]
+			})
+			
+		}
+		
 		var node = nodeGroup.selectAll("circle")
 		.data(plexes[plex])
 		.enter()
@@ -596,26 +612,64 @@ function create_single_plexes(plex){
 		}
 
 		});
+
+		nodeGroup.moveToFront();
 		
+
 		edge.attr("d", function(d){
 
 			//coordinate punto sorgente
-			var x1 = d3.select("g[id='"+d.source+"']").select("circle").attr("cx")
-			var y1 = d3.select("g[id='"+d.source+"']").select("circle").attr("cy")
+			x1 = d3.select("g[id='"+d.source+"']").select("circle").attr("cx")
+			y1 = d3.select("g[id='"+d.source+"']").select("circle").attr("cy")
 
 			//coordinate punto target
-			var x2 = d3.select("g[id='"+d.target+"']").select("circle").attr("cx")
-			var y2 = d3.select("g[id='"+d.target+"']").select("circle").attr("cy")
+			x2 = d3.select("g[id='"+d.target+"']").select("circle").attr("cx")
+			y2 = d3.select("g[id='"+d.target+"']").select("circle").attr("cy")
 
 			
 
-			var lineGenerator = d3.line()
-			var line;
+			lineGenerator = d3.line()
 			line = lineGenerator([[x1,y1],[x1,y2],[x2,y2]]);
 				
 			return line
 
-			});
+			}).attr("missing", false);
+
+		if(isClique[plex] != true){
+			edgeMiss = missingGroup.selectAll("path")
+					.data(datatemp)
+					.enter().filter(function(d){
+						return d.edges.length>0
+					})
+					.append("path")
+					.attr("id", function(d){
+							return d.id + "-"+d.edges[0]
+					})
+					.attr("source", function(d){return d.id})
+					.attr("target", function(d){return d.edges[0]})
+					.attr("stroke", "red")
+					.attr("stroke-width", strokeEdge)
+					.attr("fill", "transparent")
+					.attr("missing", true);
+
+			edgeMiss.attr("d", function(d){
+				//coordinate punto sorgente
+				 x1 = d3.select("g[id='"+d.id+"']").select("circle").attr("cx")
+				 y1 = d3.select("g[id='"+d.id+"']").select("circle").attr("cy")
+
+				//coordinate punto target
+				 x2 = d3.select("g[id='"+d.edges[0]+"']").select("circle").attr("cx")
+				 y2 = d3.select("g[id='"+d.edges[0]+"']").select("circle").attr("cy")
+
+				
+
+				lineGenerator = d3.line()
+				line = lineGenerator([[x1,y1],[x1,y2],[x2,y2]]);
+					
+				return line
+
+				});
+		}
 
 }
 
@@ -662,13 +716,14 @@ function nodeMouseOut(){
 	node.attr("stroke-width", 0)
 	.attr("stroke", "none");
 
-	var links = d3.selectAll("path").attr("stroke", "#dbdde6")
+	links = d3.select("g#edges").selectAll("path").attr("stroke", "#dbdde6")
 				.attr("stroke-width", strokeEdge)
+			
 }
 
 function topFunction() {
-    document.body.scrollTop = 0; // For Chrome, Safari and Opera 
-    document.documentElement.scrollTop = 0; // For IE and Firefox
+    document.body.scrollTop = 0;  
+    document.documentElement.scrollTop = 0; 
 }
 
 window.onscroll = function() {scrollFunction()};
