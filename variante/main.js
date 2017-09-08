@@ -64,10 +64,7 @@ window.onclick = function(e) {
 	
 	if(e.target.matches('#missingEdgesCheckbox')){
 		showMissingEdges = e.target.checked
-
-		console.log(showMissingEdges)
 		if(showMissingEdges == true){
-			console.log("ciaone")
 			d3.select("g#missingEdgesGroup").selectAll("path").attr("stroke", "red")
 							.attr("stroke-width", strokeEdge)
 							.attr("fill", "transparent")
@@ -524,7 +521,7 @@ function create_single_plexes(plex){
 
 		plexLength = plexes[plex].length
 
-
+		console.log(plexes[plex])
 
 		var xRangeMin = parseInt(width/8.)
 		var xRangeMax = parseInt(width - xRangeMin)
@@ -535,19 +532,19 @@ function create_single_plexes(plex){
 		var innerWidth = xRangeMax - xRangeMin
 		var innerHeight = yRangeMax - yRangeMin
 
-    if(plexLength < 10){
-      coordX = innerWidth/20.
-      coordY = innerHeight/20.
-    }
-    else{
-      coordX = innerWidth/plexLength
-      coordY = innerHeight/plexLength
-    }
+	    if(plexLength < 10){
+	      coordX = innerWidth/20.
+	      coordY = innerHeight/20.
+	    }
+	    else{
+	      coordX = innerWidth/plexLength
+	      coordY = innerHeight/plexLength
+	    }
 
-    strokeEdge = coordY/8.
-    strokeNode = coordY/6.
-    nodeRadius = coordY/1.2
-    fontSize = coordY/1.6
+	    strokeEdge = coordY/8.
+	    strokeNode = coordY/6.
+	    nodeRadius = coordY/1.2
+	    fontSize = coordY/1.6
 
 		var x_coordinates = []
 		for(var i = xRangeMin; i < xRangeMax; i += coordX){
@@ -587,35 +584,37 @@ function create_single_plexes(plex){
 				.attr("fill", "transparent");
 
 		var datatemp = []
+		missingEdges = findMissingEdges2(isClique, edgesInPlexes, plexes)
+			    var dataMissEdges = missingEdges[plex]
 
-    missingEdges = findMissingEdges2(isClique, edgesInPlexes, plexes)
-    var dataMissEdges = missingEdges[plex]
-    console.log(dataMissEdges)
+		
 
 		for(k in dataMissEdges){ 
-      targets = dataMissEdges[k]["edges"]
-      if (targets.length > 0) {
-			   for (i = 0; i < dataMissEdges[k]["edges"].length; i++) {
-            edgeToCompare = {"source":dataMissEdges[k]["edges"][i], "target":dataMissEdges[k]["id"]}
-              datatemp.push({
-				          "source": dataMissEdges[k]["id"],
-				          "target": dataMissEdges[k]["edges"][i]
-            })
-        }
-      }
+			targets = dataMissEdges[k]["edges"]
+			if (targets.length > 0) {
+				for (i = 0; i < dataMissEdges[k]["edges"].length; i++) {
+					edgeToCompare = {"source":dataMissEdges[k]["edges"][i], "target":dataMissEdges[k]["id"]}
+					datatemp.push({
+						"source": dataMissEdges[k]["id"],
+						"target": dataMissEdges[k]["edges"][i]
+					})
+				}
+			}
+		}
 
 
 		
-    //remove duplicate edges
-    for (i = 0; i < datatemp.length; i++) {
-      temp = datatemp[i]
-      obj = {source:temp.target, target:temp.source}
-      index = datatemp.findIndex(i => i.source === obj.source && i.target === obj.target);
-      console.log(index)
-      if (index > 0) {
-        datatemp.splice(index, 1)
-      }
-    }
+		//remove duplicate edges
+		for (i = 0; i < datatemp.length; i++) {
+		    temp = datatemp[i]
+		    obj = {source:temp.target, target:temp.source}
+		    index = datatemp.findIndex(i => i.source === obj.source && i.target === obj.target);
+		    
+		    if (index > 0) {
+		    	datatemp.splice(index, 1)
+		    }
+		}
+		
 
 		var node = nodeGroup.selectAll("circle")
 		.data(plexes[plex])
@@ -789,5 +788,5 @@ function scrollFunction() {
         document.getElementById("goTopButton").style.display = "none";
     }
 }
-}
+
 
