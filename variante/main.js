@@ -405,8 +405,8 @@ function drawStackedGraph(nodes, edges, plexes) {
 	}
 
 	edgesInPlexes = findEdges(isClique, plexes, plexesEdges)
-	missingEdges = findMissingEdges(isClique, edgesInPlexes, plexes)
-	console.log(missingEdges)
+	missingEdges = findMissingEdges2(isClique, edgesInPlexes, plexes)
+
 
 	}
 
@@ -433,6 +433,31 @@ function findMissingEdges(isClique, edgesInPlexes, plexes) {
 		}		
 	}
 	return result
+}
+
+function findMissingEdges2(isClique, edgesInPlexes, plexes) {
+  result = []
+  for (i = 0; i < edgesInPlexes.length; i++) {
+    result.push([])
+    if (!isClique[i]) {
+      for (node in edgesInPlexes[i]) {
+        toCompare = plexes[i]
+        toRemove = edgesInPlexes[i][node]
+        missingEdges = toCompare.filter(function(item) {
+          return toRemove.indexOf(item) === -1;
+        })
+        if (missingEdges != undefined) {
+          index = missingEdges.indexOf(node)
+          missingEdges.splice(index, 1);
+          obj = {}
+          obj["id"] = node
+          obj["edges"] = missingEdges
+          result[i].push(obj)
+        }
+      }
+    }   
+  }
+  return result
 }
 
 function findEdges(isClique, plexes, plexesEdges) {
@@ -553,19 +578,35 @@ function create_single_plexes(plex){
 				.attr("stroke-width", strokeEdge)
 				.attr("fill", "transparent");
 
-		var dataMissEdges = missingEdges[plex]
-		
 		var datatemp = []
+    missingEdges = findMissingEdges2(isClique, edgesInPlexes, plexes)
+    var dataMissEdges = missingEdges[plex]
+    console.log(dataMissEdges)
 
-		for(var k in dataMissEdges){
-
-			datatemp.push({
-				"id":k,
-				"edges": dataMissEdges[k][0]
-			})
-			
+		for(k in dataMissEdges){ 
+      targets = dataMissEdges[k]["edges"]
+      if (targets.length > 0) {
+			   for (i = 0; i < dataMissEdges[k]["edges"].length; i++) {
+            edgeToCompare = {"source":dataMissEdges[k]["edges"][i], "target":dataMissEdges[k]["id"]}
+              datatemp.push({
+				          "source": dataMissEdges[k]["id"],
+				          "target": dataMissEdges[k]["edges"][i]
+            })
+        }
+      }
 		}
 		
+    //remove duplicate edges
+    for (i = 0; i < datatemp.length; i++) {
+      temp = datatemp[i]
+      obj = {source:temp.target, target:temp.source}
+      index = datatemp.findIndex(i => i.source === obj.source && i.target === obj.target);
+      console.log(index)
+      if (index > 0) {
+        datatemp.splice(index, 1)
+      }
+    }
+
 		var node = nodeGroup.selectAll("circle")
 		.data(plexes[plex])
 		.enter()
@@ -638,15 +679,13 @@ function create_single_plexes(plex){
 		if(isClique[plex] != true){
 			edgeMiss = missingGroup.selectAll("path")
 					.data(datatemp)
-					.enter().filter(function(d){
-						return d.edges.length>0
-					})
+					.enter()
 					.append("path")
 					.attr("id", function(d){
-							return d.id + "-"+d.edges[0]
+							return d.source + "-"+d.target
 					})
-					.attr("source", function(d){return d.id})
-					.attr("target", function(d){return d.edges[0]})
+					.attr("source", function(d){return d.source})
+					.attr("target", function(d){return d.target})
 					.attr("stroke", "red")
 					.attr("stroke-width", strokeEdge)
 					.attr("fill", "transparent")
@@ -654,12 +693,12 @@ function create_single_plexes(plex){
 
 			edgeMiss.attr("d", function(d){
 				//coordinate punto sorgente
-				 x1 = d3.select("g[id='"+d.id+"']").select("circle").attr("cx")
-				 y1 = d3.select("g[id='"+d.id+"']").select("circle").attr("cy")
+				 x1 = d3.select("g[id='"+d.source+"']").select("circle").attr("cx")
+				 y1 = d3.select("g[id='"+d.source+"']").select("circle").attr("cy")
 
 				//coordinate punto target
-				 x2 = d3.select("g[id='"+d.edges[0]+"']").select("circle").attr("cx")
-				 y2 = d3.select("g[id='"+d.edges[0]+"']").select("circle").attr("cy")
+				 x2 = d3.select("g[id='"+d.target+"']").select("circle").attr("cx")
+				 y2 = d3.select("g[id='"+d.target+"']").select("circle").attr("cy")
 
 				
 
