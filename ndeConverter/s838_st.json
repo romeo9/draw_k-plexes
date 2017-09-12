@@ -1568,11 +1568,7 @@
         {
             "source": 6, 
             "target": 3
-        }, 
-        {
-            "source": 7, 
-            "target": 7
-        }, 
+        },  
         {
             "source": 8, 
             "target": 3

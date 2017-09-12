@@ -504,7 +504,7 @@ function countPlexes(nodes, edges, plexes) {
 	}
 	for (edge in edges) {
 		for (i = 0; i < plexes.length; i++) {
-			if (plexes[i].includes(edges[edge].source.toString()) > 0 && plexes[i].includes(edges[edge].target.toString()) > 0) {
+			if (plexes[i].includes(edges[edge].source.toString()) > 0 && plexes[i].includes(edges[edge].target.toString()) > 0 && edges[edge].source.toString() != edges[edge].target.toString()) {
 				result[i] += 1;
 				res[i].push({source:edges[edge].source.toString(), target:edges[edge].target.toString()})
 			}
@@ -521,7 +521,7 @@ function create_single_plexes(plex){
 
 		plexLength = plexes[plex].length
 
-		console.log(plexes[plex])
+		//console.log(plexes[plex])
 
 		var xRangeMin = parseInt(width/8.)
 		var xRangeMax = parseInt(width - xRangeMin)
