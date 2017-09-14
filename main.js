@@ -16,8 +16,8 @@ var canvasHeight = (screen.height)
 var colors = ["E87E04","26c281","F4B350"];
 var radarChartObject = []
 //var mainContainer = d3.select("#mainContainer").attr("width", canvasWidth).attr("height", canvasHeight)
-cliques_color = "caebf2"
-kplex_color = "ff3B3f"
+cliques_color = "#caebf2"
+kplex_color = "#ff3B3f"
 
 var clicked = 0;
 width = screen.width*.95;
