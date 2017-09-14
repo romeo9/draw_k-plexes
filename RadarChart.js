@@ -15,7 +15,7 @@ var RadarChart = {
      TranslateY: 30,
      ExtraWidthX: 100,
      ExtraWidthY: 100,
-     color: d3.scaleOrdinal().range(["#6F257F", "#CA0D59"])
+     color: d3.scaleOrdinal().range(["#ff8533", "#CA0D59"])
     };
 	
     if('undefined' !== typeof options){
@@ -43,23 +43,6 @@ var RadarChart = {
         .attr("transform", "translate(" + cfg.TranslateX/4. + "," + cfg.TranslateY + ") scale(0.95)");
 
 		var tooltip;
-	
-    //Text indicating at what % each level is
-    for(var j=0; j<cfg.levels; j++){
-      var levelFactor = cfg.factor*radius*((j+1)/cfg.levels);
-      g.selectAll(".levels")
-       .data([1]) //dummy data
-       .enter()
-       .append("svg:text")
-       .attr("x", function(d){return levelFactor*(1-cfg.factor*Math.sin(0));})
-       .attr("y", function(d){return levelFactor*(1-cfg.factor*Math.cos(0));})
-       .attr("class", "legend")
-       .style("font-family", "sans-serif")
-       .style("font-size", "10px")
-       .attr("transform", "translate(" + (cfg.w/2-levelFactor + cfg.ToRight) + ", " + (cfg.h/2-levelFactor) + ")")
-       .attr("fill", "#737373")
-       .text((j+1)*100/cfg.levels);
-    }
 
     series = 0;
 
@@ -142,7 +125,22 @@ var tooltip = d3.select("body").append("div").attr("class", "toolTip");
       .attr("data-id", function(j){return j.area})
       .style("fill", "#fff")
       .style("stroke-width", "2px")
-      .style("stroke", cfg.color(series)).style("fill-opacity", .9);
+      .style("stroke", cfg.color(series)).style("fill-opacity", .9)
+      .on("mouseover",function(d){
+        circleSelected = d3.select(this)
+        d3.select(this.parentNode).append("text")
+                      .attr("id", "textover")
+                      .text( (Math.round(circleSelected.attr("alt")*1000))/1000 +"%")
+                      .style("font-family", "sans-serif")
+                      .style("font-size", "11px")
+                      .attr("dy", "1.5em")
+                      .style("color", "black")
+                      .attr("x", circleSelected.attr("cx"))
+                      .attr("y", circleSelected.attr("cy")-30)
+      })
+      .on("mouseout", function(d){
+        d3.select(this.parentNode).select("#textover").remove()
+      });
 
       series++;
     });
