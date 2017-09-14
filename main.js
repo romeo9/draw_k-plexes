@@ -14,6 +14,7 @@ var maxNumberEdges = 140000;
 var canvasWidth = (screen.width)/100*95
 var canvasHeight = (screen.height)
 var colors = ["E87E04","26c281","F4B350"];
+var radarChartObject = []
 //var mainContainer = d3.select("#mainContainer").attr("width", canvasWidth).attr("height", canvasHeight)
 cliques_color = "caebf2"
 kplex_color = "ff3B3f"
@@ -117,8 +118,22 @@ function set_values() {
 		   
 	}
 
-	draw_piechart();
+	percentualNodes = nodes.length * 100 / (numberOfKplexes+edges.length+nodes.length)
+	percentualEdges = edges.length * 100 / (numberOfKplexes+edges.length+nodes.length)
+	percentualKplexes = numberOfKplexes * 100 / (numberOfKplexes+edges.length+nodes.length)
+	console.log(Math.round(percentualNodes), Math.round(percentualEdges), Math.round(percentualKplexes))
+
+	templist = []
+	templist.push({"area": "nodes", "value": percentualNodes})
+	templist.push({"area": "edges", "value": percentualEdges})
+	templist.push({"area": "kplexes", "value": percentualKplexes})
+	radarChartObject.push(templist)
+
+	console.log(radarChartObject)
+
+	//draw_piechart();
   	draw_bar_chart();
+  	draw_radar_chart();
 	
 }
 
@@ -156,7 +171,7 @@ function countInArray(array, what) {
 
 
 function draw_piechart() {
-	var pieSvg = d3.select("#pieChartContainer");
+	var pieSvg = d3.select("#radarChartContainer");
 
 	pieSvg.attr("width", width*.5).attr("height", height*.6)
 
@@ -386,7 +401,8 @@ function handleMouseOut(d) {
 }
 
 function remove_all(){
-	d3.select("svg#pieChartContainer").selectAll("g").remove();
+	radarChartObject = []
+	d3.select("svg#radarChartContainer").selectAll("g").remove();
 	d3.select("svg#barChartContainer").selectAll("g").remove();
 	d3.select("svg#graphContainer").selectAll("g").remove();
 	document.getElementById("checkboxKplex").style.display = "none"
@@ -789,4 +805,17 @@ function scrollFunction() {
     }
 }
 
+function draw_radar_chart(){
+
+	var config = {
+	    w: width,
+	    h: height,
+	    maxValue: 100,
+	    levels: 5,
+	    ExtraWidthX: 300
+	}
+
+    RadarChart.draw("#chart", radarChartObject, config);
+	
+}
 
